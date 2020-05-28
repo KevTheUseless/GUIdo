@@ -1,0 +1,2 @@
+# GUIdo
+Pygame GUI library.
