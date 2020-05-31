@@ -72,7 +72,7 @@ class Button(object):
 	def __init__(self, name, picFile, x, y, guideID):
 		self.name = name
 		self.img = pygame.image.load(picFile).convert()
-		self.img.set_colorkey(pygame.Color(0, 255, 0))
+		self.img.set_colorkey(pygame.Color(38, 38, 38))
 		self.w, self.h = self.img.get_width() // 3, self.img.get_height()
 		self.x, self.y = x, y
 		self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
