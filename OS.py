@@ -126,27 +126,7 @@ class Secret(object):
 			framework.guideID = self.guideID
 
 framework = PhotoViewer()
-g01 = Guide("res/xian01.jpg")
-framework.guideID = g01.id
-framework.addGuide(g01)
-g02 = Guide("res/xian02.jpg")
-framework.addGuide(g02)
-g03 = Guide("res/xian03.jpg")
-framework.addGuide(g03)
-g04 = Guide("res/xian04.jpg")
-framework.addGuide(g04)
-g01.addButton('U', "res/button/btn_up.bmp", width // 2 - 35, 20, g02.id)
-g01.addButton('L', "res/button/btn_left.bmp", 20, height // 2 - 35, g03.id)
-g01.addButton('R', "res/button/btn_right.bmp", width - 100, height // 2 - 35, g04.id)
-g02.addButton('D', "res/button/btn_down.bmp", width // 2 - 35, height - 100, g01.id)
-g03.addButton('R', "res/button/btn_right.bmp", width - 100, height // 2 - 35, g01.id)
-g04.addButton('L', "res/button/btn_left.bmp", 20, height // 2 - 35, g01.id)
-g01.addTxt("How are you?", framework.font32, 487, 407, (0, 255, 0), (580, 439, 26, 38))
 
-g05 = Guide("res/profilePic.jpg")
-framework.addGuide(g05)
-g01.addSecret((521, 233, 24, 28), g05.id)
-g05.addSecret((521, 110, 30, 30), g01.id)
 
 while True:
 	for event in pygame.event.get():
