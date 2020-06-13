@@ -132,7 +132,8 @@ framework = OSEmu()
 bg = Guide("res/clouds.jpg")
 framework.guideID = bg.id
 framework.addGuide(bg)
-bg.addButton(Button('', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.id, font=framework.font32, content="hello"))
+raster = pygame.font.Font("res/vga936.fon", 32)
+bg.addButton(Button('', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.id, font=raster, content="hello"))
 
 
 while True:
