@@ -1,10 +1,10 @@
 from pic import *
 
-class PhotoViewer(object):
+class OSEmu(object):
 	def __init__(self):
 		pygame.init()
 		self.screen = pygame.display.set_mode((width, height))
-		pygame.display.set_caption("Photo Viewer")
+		pygame.display.set_caption("Windows 95 Simulated")
 		self.clock = pygame.time.Clock()
 		self.font32 = pygame.font.Font("res/segoeui.ttf", 32)
 		self.speed = 5
@@ -46,8 +46,7 @@ class Guide(object):
 			button.draw(screen)
 		for txt in self.txtList:
 			txt.draw(screen)
-	def addButton(self, name, picFile, x, y, guideID):
-		b = Button(name, picFile, x, y, guideID)
+	def addButton(self, b):
 		self.btnList.append(b)
 	def addTxt(self, txt, font, x, y, c, rect):
 		t = Txt(txt, font, x, y, c, rect)
@@ -69,19 +68,23 @@ class Guide(object):
 			btn.mouseMove(pos)
 
 class Button(object):
-	def __init__(self, name, picFile, x, y, guideID):
+	def __init__(self, name, picFile, x, y, guideID, **txt):
 		self.name = name
 		self.img = pygame.image.load(picFile).convert()
-		self.img.set_colorkey(pygame.Color(0, 255, 0))
+		#self.img.set_colorkey(pygame.Color(0, 255, 0))
 		self.w, self.h = self.img.get_width() // 3, self.img.get_height()
 		self.x, self.y = x, y
 		self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 		self.status = 0
 		self.guideID = guideID
+
+		self.txt = txt
 	def draw(self, screen):
 		screen.blit(self.img, (self.x, self.y),
 					(self.status * self.rect.w, 0,
 					 self.rect.w, self.rect.h))
+		if self.txt:
+			screen.blit(self.txt['font'].render(self.txt['content'], True, (0,0,0)), (self.x + 10, self.y + 30))
 	def mouseDown(self, pos, button):
 		if self.rect.collidepoint(pos):
 			self.status = 2
@@ -125,7 +128,11 @@ class Secret(object):
 			framework.guideList[self.guideID].pic.draw(framework.screen, 1, framework.speed)
 			framework.guideID = self.guideID
 
-framework = PhotoViewer()
+framework = OSEmu()
+bg = Guide("res/clouds.jpg")
+framework.guideID = bg.id
+framework.addGuide(bg)
+bg.addButton(Button('', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.id, font=framework.font32, content="hello"))
 
 
 while True:
