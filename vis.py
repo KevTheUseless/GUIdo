@@ -9,6 +9,7 @@ def write(f):
 	while True:
 		line = input()
 		if line == ".":
+			f.close()
 			break
 		line += "\n"
 		f.write(line)
