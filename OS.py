@@ -1,6 +1,6 @@
 from pic import *
 
-class OSEmu(object):
+class OSEmu:
 	def __init__(self):
 		pygame.init()
 		self.screen = pygame.display.set_mode((width, height))
@@ -9,29 +9,29 @@ class OSEmu(object):
 		self.font32 = pygame.font.Font("res/segoeui.ttf", 32)
 		self.speed = 5
 		self.mousePos = (0, 0)
-		self.guideList = []
-		self.guideID = 0
+		self.apps = []
+		self.appID = 0
 	def launch(self):
-		for guide in self.guideList:
-			guide.draw(self.screen)
+		for app in self.apps:
+			app.draw(self.screen)
 		pygame.display.update()
 		self.clock.tick(50)
-	def addGuide(self, guide):
-		guide.id = len(self.guideList)
-		self.guideList.append(guide)
+	def addApp(self, app):
+		app.id = len(self.apps)
+		self.apps.append(app)
 	def keyUp(self, key):
 		return
 	def keyDown(self, key):
 		return
 	def mouseDown(self, pos, button):
-		self.guideList[self.guideID].mouseDown(pos, button)
+		self.apps[self.appID].mouseDown(pos, button)
 		print(event.pos)
 	def mouseUp(self, pos, button):
-		self.guideList[self.guideID].mouseUp(pos, button)
+		self.apps[self.appID].mouseUp(pos, button)
 	def mouseMotion(self, pos):
-		self.guideList[self.guideID].mouseMotion(pos)
+		self.apps[self.appID].mouseMotion(pos)
 
-class Guide(object):
+class App:
 	def __init__(self, picName):
 		self.pic = Pic(picName)
 		self.id = 0
@@ -39,7 +39,7 @@ class Guide(object):
 		self.txtList = []
 		self.secretList = []
 	def draw(self, screen):
-		if framework.guideID != self.id:
+		if framework.appID != self.id:
 			return
 		screen.blit(self.pic.img, (0, 0))
 		for button in self.btnList:
@@ -51,9 +51,6 @@ class Guide(object):
 	def addTxt(self, txt, font, x, y, c, rect):
 		t = Txt(txt, font, x, y, c, rect)
 		self.txtList.append(t)
-	def addSecret(self, rect, guideID):
-		secret = Secret(rect, guideID)
-		self.secretList.append(secret)
 	def mouseDown(self, pos, button):
 		for btn in self.btnList:
 			btn.mouseDown(pos, button)
@@ -67,8 +64,8 @@ class Guide(object):
 		for btn in self.btnList:
 			btn.mouseMove(pos)
 
-class Button(object):
-	def __init__(self, name, picFile, x, y, guideID, **txt):
+class Button:
+	def __init__(self, name, picFile, x, y, appID, **txt):
 		self.name = name
 		self.img = pygame.image.load(picFile).convert()
 		#self.img.set_colorkey(pygame.Color(0, 255, 0))
@@ -76,7 +73,7 @@ class Button(object):
 		self.x, self.y = x, y
 		self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 		self.status = 0
-		self.guideID = guideID
+		self.appID = appID
 
 		self.txt = txt
 	def draw(self, screen):
@@ -94,14 +91,14 @@ class Button(object):
 		if not self.rect.collidepoint(pos):
 			return
 		if self.name == 'U':
-			framework.guideList[self.guideID].pic.draw(framework.screen, framework.speed)
+			framework.apps[self.appID].pic.draw(framework.screen, framework.speed)
 		if self.name == 'D':
-			framework.guideList[self.guideID].pic.draw(framework.screen, framework.speed)
+			framework.apps[self.appID].pic.draw(framework.screen, framework.speed)
 		if self.name == 'L':
-			framework.guideList[self.guideID].pic.draw(framework.screen, framework.speed)
+			framework.apps[self.appID].pic.draw(framework.screen, framework.speed)
 		if self.name == 'R':
-			framework.guideList[self.guideID].pic.draw(framework.screen, framework.speed)
-		framework.guideID = self.guideID
+			framework.apps[self.appID].pic.draw(framework.screen, framework.speed)
+		framework.appID = self.appID
 
 	def mouseMove(self, pos):
 		if self.rect.collidepoint(pos):
@@ -109,7 +106,7 @@ class Button(object):
 		else:
 			self.status = 0
 
-class Txt(object):
+class Txt:
 	def __init__(self, txt, font, x, y, c, rect):
 		self.txt = txt
 		self.img = font.render(txt, True, c)
@@ -119,22 +116,16 @@ class Txt(object):
 	def draw(self, screen):
 		if self.rect.collidepoint(framework.mousePos):
 			screen.blit(self.img, (self.x, self.y))
-		
-class Secret(object):
-	def __init__(self, rect, guideID):
-		self.rect = pygame.Rect(rect)
-		self.guideID = guideID
-	def mouseDown(self, pos, button):
-		if self.rect.collidepoint(pos):
-			framework.guideList[self.guideID].pic.draw(framework.screen, 1, framework.speed)
-			framework.guideID = self.guideID
 
 framework = OSEmu()
-bg = Guide("res/clouds.jpg")
-framework.guideID = bg.id
-framework.addGuide(bg)
+bg = App("res/clouds.jpg")
+vis = App("res/vis.jpg")
+framework.appID = bg.id
+framework.addApp(bg)
+framework.addApp(vis)
 raster = pygame.font.Font("res/vga936.fon", 32)
-bg.addButton(Button('', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.id, font=raster, content="hello world"))
+bg.addButton(Button('U', "res/button/txt_btn.bmp", width // 2 - 35, 20, vis.id, font=raster, content="EDIT"))
+vis.addButton(Button('D', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.id, font=raster, content="BACK"))
 
 
 while True:
