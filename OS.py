@@ -84,7 +84,8 @@ class Button(object):
 					(self.status * self.rect.w, 0,
 					 self.rect.w, self.rect.h))
 		if self.txt:
-			screen.blit(self.txt['font'].render(self.txt['content'], True, (0,0,0)), (self.x + 10, self.y + 30))
+			screen.blit(self.txt['font'].render(self.txt['content'], True, (0,0,0)),
+			            (self.x + self.w / 2 - 4 * len(self.txt['content']), self.y + self.h / 2 - 8))
 	def mouseDown(self, pos, button):
 		if self.rect.collidepoint(pos):
 			self.status = 2
@@ -133,7 +134,7 @@ bg = Guide("res/clouds.jpg")
 framework.guideID = bg.id
 framework.addGuide(bg)
 raster = pygame.font.Font("res/vga936.fon", 32)
-bg.addButton(Button('', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.id, font=raster, content="hello"))
+bg.addButton(Button('', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.id, font=raster, content="hello world"))
 
 
 while True:
