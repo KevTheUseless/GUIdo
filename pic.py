@@ -1,3 +1,6 @@
+# pic.py
+# Image-displaying module
+
 import pygame, sys, random
 
 width, height = 1024, 768
