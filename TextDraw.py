@@ -1,14 +1,16 @@
 # TextDraw.py
 # Pixel art using hex codes
+# Known Bugs:
+# IMage appears flipped
 
 import pygame, sys
 
 width, height = 800, 600
 
 def drawByte(screen, data, colorList, x0, y0, dw, scale):
-	for dy in range(len(data)):
+	for dy in range(dw):
 		line = data[dy]
-		for dx in range(dw):
+		for dx in range(len(data)):
 			c = colorList[line & 1]
 			tx = x0 + (dw - dx - 1) * scale
 			ty = y0 + dy * scale
@@ -41,18 +43,18 @@ def process(data, colorList, dw, scale):
 pygame.init()
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("TextDraw")
-brickColorList = [(64, 64, 64), (255, 127, 80)]
-grassColorList = [(0, 50, 0), (0, 120, 0)]
+commieColorList = [(255, 0, 0), (255, 255, 0)]
+swordColorList = [(0, 0, 0), (255, 255, 255)]
 clock = pygame.time.Clock()
 
-grassPic = pygame.Surface((32, 32))
-brickPic = pygame.Surface((32, 32))
-brickPic = process(convert("brick.bmp"), brickColorList, 8, 4)
-grassPic = process(convert("grass.bmp"), grassColorList, 8, 4)
+commiePic = pygame.Surface((32, 32))
+swordPic = pygame.Surface((32, 32))
+commiePic = process(convert("commie.bmp"), commieColorList, 16, 4)
+swordPic = process(convert("sword.bmp"), swordColorList, 16, 4)
 
 while True:
-	screen.blit(grassPic, (100, 100))
-	screen.blit(brickPic, (200, 100))
+	screen.blit(commiePic, (100, 100))
+	screen.blit(swordPic, (200, 100))
 	pygame.display.update()
 	clock.tick(10)
 	for event in pygame.event.get():

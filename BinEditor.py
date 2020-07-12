@@ -31,23 +31,11 @@ def calc():
 		numStr = ""
 
 def saveFile():
-	try:
-		f = open(fileName, "w")
-		for s in strList:
-			f.write(s + ' ')
-		f.close()
-	except:
-		f = open(sys.argv[1], "w")
-		f = open(fileName, "w")
-		for s in strList:
-			f.write(s + ' ')
-		f.close()
-	finally:
-		fileName = input("File to save to: ")
-		f = open(fileName, "w")
-		for s in strList:
-			f.write(s + ' ')
-		f.close()
+	fileName = input("File to save to: ")
+	f = open(fileName, "w")
+	for s in strList:
+		f.write(s + ' ')
+	f.close()
 
 n = 16
 
