@@ -4,19 +4,19 @@
 
 import pygame, sys
 
-width, height = 1024, 768
+width, height = 800, 600
 mx, my = 0, 0
 
 def drawGrid():
 	for i in range(n + 1):
-		pygame.draw.line(screen, (0, 0, 0), (50, 50 + 50 * i), (50 * (n + 1), 50 + 50 * i), 10)
+		pygame.draw.line(screen, (0, 0, 0), (50, 50 + 30 * i), (30 * (n + 1.7), 50 + 30 * i), 10)
 	for i in range(n + 1):
-		pygame.draw.line(screen, (0, 0, 0), (50 + 50 * i, 50), (50 + 50 * i, 50 * (n + 1)), 10)
+		pygame.draw.line(screen, (0, 0, 0), (50 + 30 * i, 50), (50 + 30 * i, 30 * (n + 1.7)), 10)
 
 def checkBorders():
 	try:
 		for i in range(len(squares)):
-			if pygame.Rect(squares[i][0], squares[i][1], 50, 50).collidepoint(mx, my):  
+			if pygame.Rect(squares[i][0], squares[i][1], 30, 30).collidepoint(mx, my):  
 				flagList[i] = 1 - flagList[i]
 				undo.append(i)
 	except:
@@ -49,23 +49,23 @@ def saveFile():
 			f.write(s + ' ')
 		f.close()
 
-n = 8
+n = 16
 
 squares = []
-for i in range(55, 50 * (n + 1), 50):
-	for j in range(55, 50 * (n + 1), 50):
+for i in range(55, 30 * (n + 1), 30):
+	for j in range(55, 30 * (n + 1), 30):
 		squares.append([i, j])
 strList = [""] * n
 
 print(squares)
 
-flagList = [0] * 64
+flagList = [0] * n * n
 
 pygame.init()
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Binary Color Editor")
 clock = pygame.time.Clock()
-font = pygame.font.Font(None, 32)
+font = pygame.font.Font(None, 20)
 undo = []
 redo = []
 over = False
@@ -78,10 +78,10 @@ while True:
 	mx, my = 0, 0
 	for i in range(len(flagList)):
 		if flagList[i]:
-			pygame.draw.rect(screen, (255, 255, 0), pygame.Rect(squares[i][0], squares[i][1], 40, 40), 0)
+			pygame.draw.rect(screen, (255, 255, 0), pygame.Rect(squares[i][0], squares[i][1], 20, 20), 0)
 	for i in range(len(strList)):
 		img = font.render(strList[i], True, (0, 0, 255))
-		screen.blit(img, (60 + 52 * i, 50 * (n + 1) + 45))
+		screen.blit(img, (55 + 30.5 * i, 30 * (n + 1) + 45))
 	pygame.display.update()
 	clock.tick(10)
 	for event in pygame.event.get():

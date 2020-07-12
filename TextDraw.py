@@ -1,3 +1,6 @@
+# TextDraw.py
+# Pixel art using hex codes
+
 import pygame, sys
 
 width, height = 800, 600
