@@ -1,10 +1,13 @@
+# ProgressBar.py
+# Sample pseudocode for a progress bar
+
 X_MAX = 1920
 
 progressBar = 0
 STUFF_TO_ITERATE = "NOTHING"
 
 for STUFF_TO_ITERATE:
-	#PUT STUFF HERE
+	# PUT STUFF HERE
 	progressBar += 1
 	pygame.draw.rect(screen, (0, 255, 0), (0, 250, 800, 100), 2)
 	pygame.draw.rect(screen, (0, 255, 0), (0, 250, int(progressBar / X_MAX * 800), 100), 0)

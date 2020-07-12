@@ -1,6 +1,9 @@
+# kernel.py
+# Core of our OS
+
 from pic import *
 
-class OSEmu:
+class Kernel:
 	def __init__(self):
 		pygame.init()
 		self.screen = pygame.display.set_mode((width, height))
@@ -19,8 +22,9 @@ class OSEmu:
 	def addApp(self, app):
 		app.id = len(self.apps)
 		self.apps.append(app)
+	# TODO: Add KEYUP/KEYDOWN support
 	def keyUp(self, key):
-		return
+		return 
 	def keyDown(self, key):
 		return
 	def mouseDown(self, pos, button):
@@ -63,12 +67,16 @@ class App:
 		framework.mousePos = pos
 		for btn in self.btnList:
 			btn.mouseMove(pos)
+	def keyUp(self, button):
+		framework.keyUp(button)
+	def keyDown(self, button):
+		framework.keyDown(button)
 
 class Button:
 	def __init__(self, name, picFile, x, y, appID, **txt):
 		self.name = name
 		self.img = pygame.image.load(picFile).convert()
-		#self.img.set_colorkey(pygame.Color(0, 255, 0))
+#		self.img.set_colorkey(pygame.Color(0, 255, 0))
 		self.w, self.h = self.img.get_width() // 3, self.img.get_height()
 		self.x, self.y = x, y
 		self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
@@ -81,8 +89,8 @@ class Button:
 					(self.status * self.rect.w, 0,
 					 self.rect.w, self.rect.h))
 		if self.txt:
-			screen.blit(self.txt['font'].render(self.txt['content'], True, (0,0,0)),
-			            (self.x + self.w / 2 - 4 * len(self.txt['content']), self.y + self.h / 2 - 8))
+			screen.blit(self.txt["font"].render(self.txt["content"], True, (0,0,0)),
+			            (self.x + self.w / 2 - 4 * len(self.txt["content"]), self.y + self.h / 2 - 8))
 	def mouseDown(self, pos, button):
 		if self.rect.collidepoint(pos):
 			self.status = 2
@@ -117,15 +125,15 @@ class Txt:
 		if self.rect.collidepoint(framework.mousePos):
 			screen.blit(self.img, (self.x, self.y))
 
-framework = OSEmu()
+framework = Kernel()
 bg = App("res/clouds.jpg")
 vis = App("res/vis.jpg")
 framework.appID = bg.id
 framework.addApp(bg)
 framework.addApp(vis)
 raster = pygame.font.Font("res/vga936.fon", 32)
-bg.addButton(Button('U', "res/button/txt_btn.bmp", width // 2 - 35, 20, vis.id, font=raster, content="EDIT"))
-vis.addButton(Button('D', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.id, font=raster, content="BACK"))
+bg.addButton(Button('U', "res/button/txt_btn.bmp", width // 2 - 35, 20, vis.id, font=raster, content="TERMINAL"))
+vis.addButton(Button('D', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.id, font=raster, content="CLOSE"))
 
 
 while True:
