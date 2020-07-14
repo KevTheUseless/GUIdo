@@ -23,13 +23,10 @@ class Kernel:
 		app.appID = len(self.apps)
 		self.apps.append(app)
 	# TODO: Add KEYUP/KEYDOWN support
-	def keyUp(self, appID, key):
+	def keyUp(self, key):
 		return
-	def keyDown(self, appID, key):
-		if appID == term.appID:
-			# Terminal stuff
-			pass
-		# Rinse & repeat for other apps
+	def keyDown(self, key):
+		return
 	def mouseDown(self, pos, button):
 		self.apps[self.appID].mouseDown(pos, button)
 		print(event.pos)

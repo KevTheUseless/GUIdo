@@ -43,14 +43,9 @@ def process(data, colorList, dw, scale):
 pygame.init()
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("TextDraw")
-commieColorList = [(255, 0, 0), (255, 255, 0)]
-swordColorList = [(0, 0, 0), (255, 255, 255)]
 clock = pygame.time.Clock()
 
-commiePic = pygame.Surface((32, 32))
-swordPic = pygame.Surface((32, 32))
-commiePic = process(convert("commie.bmp"), commieColorList, 16, 4)
-swordPic = process(convert("sword.bmp"), swordColorList, 16, 4)
+# Color lists, Suface declarations & image-loading here
 
 while True:
 	screen.blit(commiePic, (100, 100))

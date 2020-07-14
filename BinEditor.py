@@ -9,9 +9,9 @@ mx, my = 0, 0
 
 def drawGrid():
 	for i in range(n + 1):
-		pygame.draw.line(screen, (0, 0, 0), (50, 50 + 30 * i), (30 * (n + 1.7), 50 + 30 * i), 10)
+		pygame.draw.line(screen, (170, 170, 170), (50, 50 + 30 * i), (30 * (n + 1.7), 50 + 30 * i), 10)
 	for i in range(n + 1):
-		pygame.draw.line(screen, (0, 0, 0), (50 + 30 * i, 50), (50 + 30 * i, 30 * (n + 1.7)), 10)
+		pygame.draw.line(screen, (170, 170, 170), (50 + 30 * i, 50), (50 + 30 * i, 30 * (n + 1.7)), 10)
 
 def checkBorders():
 	try:
@@ -26,7 +26,7 @@ def calc():
 	numStr = ""
 	for i in range(n):
 		for j in range(n):
-			numStr += str(flagList[n * i + j])
+			numStr += str(flagList[n * j + i])
 		strList[i] = hex(int(numStr, 2))[2:]
 		numStr = ""
 
@@ -37,7 +37,7 @@ def saveFile():
 		f.write(s + ' ')
 	f.close()
 
-n = 16
+n = 8
 
 squares = []
 for i in range(55, 30 * (n + 1), 30):
@@ -48,28 +48,29 @@ strList = [""] * n
 print(squares)
 
 flagList = [0] * n * n
+print(flagList)
 
 pygame.init()
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Binary Color Editor")
 clock = pygame.time.Clock()
-font = pygame.font.Font(None, 20)
+font = pygame.font.Font(None, 24)
 undo = []
 redo = []
 over = False
 
 while True:
-	screen.fill((255, 0, 0))
+	screen.fill((0, 0, 0))
 	drawGrid()
 	checkBorders()
 	calc()
 	mx, my = 0, 0
 	for i in range(len(flagList)):
 		if flagList[i]:
-			pygame.draw.rect(screen, (255, 255, 0), pygame.Rect(squares[i][0], squares[i][1], 20, 20), 0)
+			pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(squares[i][0] + 1, squares[i][1] + 1, 20, 20), 0)
 	for i in range(len(strList)):
 		img = font.render(strList[i], True, (0, 0, 255))
-		screen.blit(img, (55 + 30.5 * i, 30 * (n + 1) + 45))
+		screen.blit(img, (30 * (n + 1) + 45, 55 + 30.5 * i))
 	pygame.display.update()
 	clock.tick(10)
 	for event in pygame.event.get():

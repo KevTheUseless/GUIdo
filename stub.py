@@ -18,3 +18,5 @@ else:
 	print("Success!")
 	print("Proceed to booting...")
 	# TODO: Read kernel from disk
+
+img.close()
