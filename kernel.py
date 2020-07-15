@@ -20,11 +20,11 @@ class Kernel:
 		pygame.display.update()
 		self.clock.tick(50)
 	def addApp(self, app):
-		app.id = len(self.apps)
+		app.appID = len(self.apps)
 		self.apps.append(app)
 	# TODO: Add KEYUP/KEYDOWN support
 	def keyUp(self, key):
-		return 
+		return
 	def keyDown(self, key):
 		return
 	def mouseDown(self, pos, button):
@@ -38,12 +38,12 @@ class Kernel:
 class App:
 	def __init__(self, picName):
 		self.pic = Pic(picName)
-		self.id = 0
+		self.appID = 0
 		self.btnList = []
 		self.txtList = []
 		self.secretList = []
 	def draw(self, screen):
-		if framework.appID != self.id:
+		if framework.appID != self.appID:
 			return
 		screen.blit(self.pic.img, (0, 0))
 		for button in self.btnList:
@@ -82,14 +82,13 @@ class Button:
 		self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 		self.status = 0
 		self.appID = appID
-
 		self.txt = txt
 	def draw(self, screen):
 		screen.blit(self.img, (self.x, self.y),
 					(self.status * self.rect.w, 0,
 					 self.rect.w, self.rect.h))
 		if self.txt:
-			screen.blit(self.txt["font"].render(self.txt["content"], True, (0,0,0)),
+			screen.blit(self.txt["font"].render(self.txt["content"], True, (0,0,0)), \
 			            (self.x + self.w / 2 - 4 * len(self.txt["content"]), self.y + self.h / 2 - 8))
 	def mouseDown(self, pos, button):
 		if self.rect.collidepoint(pos):
@@ -127,13 +126,13 @@ class Txt:
 
 framework = Kernel()
 bg = App("res/clouds.jpg")
-vis = App("res/vis.jpg")
-framework.appID = bg.id
+term = App("res/term.jpg")
+framework.appID = bg.appID
 framework.addApp(bg)
-framework.addApp(vis)
+framework.addApp(term)
 raster = pygame.font.Font("res/vga936.fon", 32)
-bg.addButton(Button('U', "res/button/txt_btn.bmp", width // 2 - 35, 20, vis.id, font=raster, content="TERMINAL"))
-vis.addButton(Button('D', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.id, font=raster, content="CLOSE"))
+bg.addButton(Button('U', "res/button/txt_btn.bmp", width // 2 - 35, 20, term.appID, font=raster, content="TERMINAL"))
+term.addButton(Button('D', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=raster, content="CLOSE"))
 
 
 while True:
