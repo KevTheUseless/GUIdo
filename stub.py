@@ -4,11 +4,11 @@
 import sys, shutil
 
 try:
-	img = open("files.img", "r")
+	img = open("files.img", "r+")
 except:
 	print("Invalid file. Copying backup disk...")
 	shutil.copyfile("backup/files.img", "files.img")
-	img = open("files.img", "r")
+	img = open("files.img", "r+")
 
 header = img.read(24)
 if header != "LICENSEDUNDERAGPL&KTUGPL":
