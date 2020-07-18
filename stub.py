@@ -17,6 +17,7 @@ if header != "LICENSEDUNDERAGPL&KTUGPL":
 else:
 	print("Success!")
 	print("Proceed to booting...")
-	# TODO: Read kernel from disk
+	with open("kernel.py") as kernel:
+		exec(kernel.read())
 
 img.close()
