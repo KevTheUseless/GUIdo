@@ -89,7 +89,7 @@ class Button:
 					 self.rect.w, self.rect.h))
 		if self.txt:
 			screen.blit(self.txt["font"].render(self.txt["content"], True, (0,0,0)), \
-			            (self.x + self.w / 2 - 4 * len(self.txt["content"]), self.y + self.h / 2 - 8))
+			            (self.x + self.w // 2 - 4 * len(self.txt["content"]), self.y + self.h // 2 - 8))
 	def mouseDown(self, pos, button):
 		if self.rect.collidepoint(pos):
 			self.status = 2
