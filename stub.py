@@ -17,6 +17,6 @@ if header != "LICENSEDUNDERAGPL&KTUGPL":
 else:
 	print("Success!")
 	print("Proceed to booting...")
-	exec(img.read().strip('\x00'))
+	exec(img.read().strip('\0'))
 
 img.close()
