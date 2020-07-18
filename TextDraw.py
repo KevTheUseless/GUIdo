@@ -1,7 +1,5 @@
 # TextDraw.py
 # Pixel art using hex codes
-# Known Bugs:
-# IMage appears flipped
 
 import pygame, sys
 
@@ -45,11 +43,18 @@ screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("TextDraw")
 clock = pygame.time.Clock()
 
+letterColorList = [(0, 0, 0), (255, 255, 255)]
+letters = []
+for i in range(26):
+	name = i + ord('A')
+	letters.append(process(convert("res/charset/upper/" + chr(name) + ".bmp"), letterColorList, 8, 2))
+
 # Color lists, Suface declarations & image-loading here
 
 while True:
-	screen.blit(commiePic, (100, 100))
-	screen.blit(swordPic, (200, 100))
+	# Blit part
+	for i in range(26):
+		screen.blit(letters[i], (10 + i * 16, 100))
 	pygame.display.update()
 	clock.tick(10)
 	for event in pygame.event.get():
