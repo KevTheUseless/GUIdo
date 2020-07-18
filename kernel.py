@@ -139,7 +139,7 @@ class Txt:
 		self.rect = pygame.Rect(rect)
 	def draw(self, screen):
 		if self.rect.collidepoint(framework.mousePos):
-			screen.blit(self.img, (self.x, self.y))
+			screen.blit(self.img, (self.x, self.y))	
 
 framework = Kernel()
 bg = App("res/clouds.jpg")
