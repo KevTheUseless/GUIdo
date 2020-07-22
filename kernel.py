@@ -2,8 +2,42 @@
 # Core of our OS
 
 import pygame, sys, random
+from enum import Enum
 
 width, height = 1024, 768
+
+def drawByte(screen, data, colorList, x0, y0, dw, scale):
+	for dy in range(dw):
+		line = data[dy]
+		for dx in range(len(data)):
+			c = colorList[line & 1]
+			tx = x0 + (dw - dx - 1) * scale
+			ty = y0 + dy * scale
+			if scale > 1:
+				pygame.draw.rect(screen, c, (tx, ty, scale, scale), 0)
+			else:
+				screen.set_at((tx, ty), c)
+			line >>= 1
+	return
+
+def convert(fileName):
+	try:
+		f = open(fileName, "r")
+		dataList = f.readline().split()
+		f.close()
+	except:
+		print("File not found!")
+		pygame.quit()
+		sys.exit()
+	converted = []
+	for i in dataList:
+		converted.append(int(i, 16))
+	return converted
+
+def process(data, colorList, dw, scale):
+	img = pygame.Surface((dw * scale, dw * scale))
+	drawByte(img, data, colorList, 0, 0, dw, scale)
+	return img
 
 class Pic(object):
 	def __init__(self, fileName):
@@ -139,7 +173,21 @@ class Txt:
 		self.rect = pygame.Rect(rect)
 	def draw(self, screen):
 		if self.rect.collidepoint(framework.mousePos):
-			screen.blit(self.img, (self.x, self.y))	
+			screen.blit(self.img, (self.x, self.y))
+
+class DlgStatus(Enum):
+	INFO = 0
+	WARNING = 1
+	ERROR = 2
+
+class Dialog(object):
+	def __init__(self, title, content, scale, status = DlgStatus.INFO):
+		self.title = title
+		self.icon = pygame.image.load("res/dialog/" + str(status) + ".png")
+		self.content = content
+		self.scale = scale
+	def draw(self, screen):
+		pass
 
 framework = Kernel()
 bg = App("res/clouds.jpg")

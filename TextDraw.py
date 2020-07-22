@@ -44,17 +44,18 @@ pygame.display.set_caption("TextDraw")
 clock = pygame.time.Clock()
 
 letterColorList = [(0, 0, 0), (255, 255, 255)]
-letters = []
+upper = []
+lower = []
 for i in range(26):
 	name = i + ord('A')
-	letters.append(process(convert("res/charset/upper/" + chr(name) + ".bmp"), letterColorList, 8, 2))
-
-# Color lists, Suface declarations & image-loading here
+	upper.append(process(convert("res/charset/upper/" + chr(name) + ".bmp"), letterColorList, 8, 2))
+	name = i + ord('a')
+	lower.append(process(convert("res/charset/lower/" + chr(name) + ".bmp"), letterColorList, 8, 2))
 
 while True:
-	# Blit part
 	for i in range(26):
-		screen.blit(letters[i], (10 + i * 16, 100))
+		screen.blit(upper[i], (10 + i * 16, 100))
+		screen.blit(lower[i], (10 + i * 16, 116))
 	pygame.display.update()
 	clock.tick(10)
 	for event in pygame.event.get():
