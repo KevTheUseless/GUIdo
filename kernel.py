@@ -6,38 +6,16 @@ from enum import Enum
 
 width, height = 1024, 768
 
-def drawByte(screen, data, colorList, x0, y0, dw, scale):
-	for dy in range(dw):
-		line = data[dy]
-		for dx in range(len(data)):
-			c = colorList[line & 1]
-			tx = x0 + (dw - dx - 1) * scale
-			ty = y0 + dy * scale
-			if scale > 1:
-				pygame.draw.rect(screen, c, (tx, ty, scale, scale), 0)
-			else:
-				screen.set_at((tx, ty), c)
-			line >>= 1
-	return
-
-def convert(fileName):
-	try:
-		f = open(fileName, "r")
-		dataList = f.readline().split()
-		f.close()
-	except:
-		print("File not found!")
-		pygame.quit()
-		sys.exit()
-	converted = []
-	for i in dataList:
-		converted.append(int(i, 16))
-	return converted
-
-def process(data, colorList, dw, scale):
-	img = pygame.Surface((dw * scale, dw * scale))
-	drawByte(img, data, colorList, 0, 0, dw, scale)
-	return img
+def lineWrap(txt, w):
+	processed = []
+	temp = ""
+	for i in range(txt.__len__()):
+		if i != 0 and i % w == 0:
+			processed.append(framework.raster.render(temp, True, (0, 0, 0)))
+			temp = ""
+		temp += txt[i]
+	processed.append(framework.raster.render(temp, True, (0, 0, 0)))
+	return processed
 
 class Pic(object):
 	def __init__(self, fileName):
@@ -61,18 +39,30 @@ class Kernel:
 		pygame.display.set_caption("Windows 95 Simulated")
 		self.clock = pygame.time.Clock()
 		self.font32 = pygame.font.Font("res/segoeui.ttf", 32)
+		self.raster = pygame.font.Font("res/vga936.fon", 32)
 		self.speed = 5
 		self.mousePos = (0, 0)
 		self.apps = []
 		self.appID = 0
+		self.dialogs = []
+		self.dialogID = 0
 	def launch(self):
 		for app in self.apps:
 			app.draw(self.screen)
+		for dialog in self.dialogs:
+			try:
+				dialog.draw(self.screen)
+			except:
+				pass
 		pygame.display.update()
 		self.clock.tick(50)
 	def addApp(self, app):
 		app.appID = len(self.apps)
 		self.apps.append(app)
+	def addDialog(self, dialog):
+		dialog.dialogID = len(self.dialogs)
+		dialog.closeBtn = Secret((dialog.x + 357, dialog.y + 6, 17, 16), dialog.dialogID)
+		self.dialogs.append(dialog)
 	# TODO: Add KEYUP/KEYDOWN support
 	def keyUp(self, key):
 		return
@@ -80,6 +70,10 @@ class Kernel:
 		return
 	def mouseDown(self, pos, button):
 		self.apps[self.appID].mouseDown(pos, button)
+		try:
+			self.dialogs[self.dialogID].mouseDown(pos, button)
+		except:
+			pass
 		print(event.pos)
 	def mouseUp(self, pos, button):
 		self.apps[self.appID].mouseUp(pos, button)
@@ -127,7 +121,6 @@ class Button:
 	def __init__(self, name, picFile, x, y, appID, **txt):
 		self.name = name
 		self.img = pygame.image.load(picFile).convert()
-#		self.img.set_colorkey(pygame.Color(0, 255, 0))
 		self.w, self.h = self.img.get_width() // 3, self.img.get_height()
 		self.x, self.y = x, y
 		self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
@@ -175,19 +168,39 @@ class Txt:
 		if self.rect.collidepoint(framework.mousePos):
 			screen.blit(self.img, (self.x, self.y))
 
+class Secret:
+	def __init__(self, rect, dialogID):
+		self.rect = pygame.Rect(rect)
+		self.dialogID = dialogID
+	def mouseDown(self, pos, button):
+		if self.rect.collidepoint(pos):
+			framework.dialogs.pop(len(framework.dialogs) - 1)
+			print(len(framework.dialogs) - 1)
+
 class DlgStatus(Enum):
 	INFO = 0
 	WARNING = 1
 	ERROR = 2
 
-class Dialog(object):
-	def __init__(self, title, content, scale, status = DlgStatus.INFO):
-		self.title = title
-		self.icon = pygame.image.load("res/dialog/" + str(status) + ".png")
-		self.content = content
-		self.scale = scale
+class Dialog:
+	def __init__(self, title, content, status = DlgStatus.INFO):
+		self.img = pygame.image.load("res/dialog/dialog.png")
+		self.icon = pygame.image.load("res/dialog/" + str(status) + ".bmp")
+		self.icon.set_colorkey((255, 255, 255))
+		self.title = framework.raster.render(title, True, (255, 255, 255))
+		self.content = lineWrap(content, 35)
+		self.dialogID = 0
+		self.w, self.h = self.img.get_size()
+		self.x, self.y = 322, 284
+		self.closeBtn = None
 	def draw(self, screen):
-		pass
+		screen.blit(self.img, (self.x, self.y))
+		screen.blit(self.title, (self.x + 10, self.y + 6))
+		screen.blit(self.icon, (self.x + 30, self.y + 90))
+		for i in range(len(self.content)):
+			screen.blit(self.content[i], (self.x + 80, self.y + 35 + i * 16))
+	def mouseDown(self, pos, button):
+		self.closeBtn.mouseDown(pos, button)
 
 framework = Kernel()
 bg = App("res/clouds.jpg")
@@ -195,10 +208,10 @@ term = App("res/term.jpg")
 framework.appID = bg.appID
 framework.addApp(bg)
 framework.addApp(term)
-raster = pygame.font.Font("res/vga936.fon", 32)
-bg.addButton(Button('U', "res/button/txt_btn.bmp", width // 2 - 35, 20, term.appID, font=raster, content="TERMINAL"))
-term.addButton(Button('D', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=raster, content="CLOSE"))
-
+framework.addDialog(Dialog("Hey there!", "Welcome to our OS emulator! As you can see, line wrap is working perfectly here. Now we just need some art for the icons."))
+framework.addDialog(Dialog("Hi!", "Another one"))
+bg.addButton(Button('U', "res/button/txt_btn.bmp", width // 2 - 35, 20, term.appID, font=framework.raster, content="TERMINAL"))
+term.addButton(Button('D', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
 
 while True:
 	for event in pygame.event.get():
@@ -207,8 +220,10 @@ while True:
 			sys.exit()
 		if event.type == pygame.KEYDOWN:
 			framework.keyDown(event.key)
+			print(event.key)
 		elif event.type == pygame.KEYUP:
 			framework.keyUp(event.key)
+			print(event.key)
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			framework.mouseDown(event.pos, event.button)
 		elif event.type == pygame.MOUSEBUTTONUP:
