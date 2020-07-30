@@ -3,6 +3,26 @@
 
 import pygame, sys
 
+def wrap(txtBuffer):
+	lines = []
+	temp = ""
+	for c in txtBuffer:
+		if c == '\n':
+			lines.append(temp)
+			temp = ""
+		else:
+			temp += c
+	lines.append(temp)
+	print(lines)
+	return lines
+
+def drawTxt(screen, lines, y = 0):
+	for line in lines:
+		img = raster.render(line, True, (255, 255, 255))
+		screen.blit(img, (0, y))
+		y += 16
+
+
 width, height = 800, 600
 
 txtBuffer = []
@@ -61,10 +81,14 @@ screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("TextDraw")
 clock = pygame.time.Clock()
 
+raster = pygame.font.Font("res/vga936.fon", 32)
+
 shift = False
 capsLock = False
 
 while True:
+	screen.fill((0, 0, 0))
+	drawTxt(screen, wrap(txtBuffer))
 	pygame.display.update()
 	clock.tick(50)
 	for event in pygame.event.get():
