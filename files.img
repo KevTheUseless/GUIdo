@@ -235,7 +235,7 @@ while True:
 			framework.mouseMotion(event.pos)
 	framework.launch()
 
-!LOC=/bin/
+!LOC=/sys/
 !FNAME=vis.py
 # vis.py
 # Basic CLI text editor
