@@ -1,4 +1,3 @@
-#
 # OS emulator using pygame.
 # Copyright (C) 2020 The-UltimateGamer & pythonleo
 # 
@@ -37,9 +36,10 @@ else:
 	dsk_spl = img.read().split('\n')
 	kernel = []
 	for i, line in enumerate(dsk_spl):
-		if line == '!LOC=/sys/' and dsk_spl[i+1] == '!FNAME=kernel.py':
+		if line == '!LOC=/sys/' and dsk_spl[i + 1] == '!FNAME=kernel.py':
 			for j in range(i+2, len(dsk_spl)):
-				if len(dsk_spl[j]) > 0 and dsk_spl[j][0] == '!': break
+				if len(dsk_spl[j]) > 0 and dsk_spl[j][0] == '!':
+					break
 				kernel.append(dsk_spl[j])
 			break
 

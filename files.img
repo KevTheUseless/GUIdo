@@ -189,8 +189,8 @@ class DlgStatus(Enum):
 class Dialog:
 	def __init__(self, title, content, status = DlgStatus.INFO):
 		self.img = pygame.image.load("res/dialog/dialog.png")
-		self.icon = pygame.image.load("res/dialog/" + str(status) + ".bmp")
-		self.icon.set_colorkey((255, 255, 255))
+		self.icon = pygame.transform.scale(pygame.image.load("res/dialog/" + str(status) + ".bmp"), (32, 32))
+		self.icon.set_colorkey((255, 0, 255))
 		self.title = framework.raster.render(title, True, (255, 255, 255))
 		self.content = lineWrap(content, 35)
 		self.dialogID = 0
@@ -212,8 +212,7 @@ term = App("res/term.jpg")
 framework.appID = bg.appID
 framework.addApp(bg)
 framework.addApp(term)
-framework.addDialog(Dialog("Hey there!", "Welcome to our OS emulator! As you can see, line wrap is working perfectly here. Now we just need some art for the icons."))
-framework.addDialog(Dialog("Hi!", "Another one"))
+framework.addDialog(Dialog("Hey there!", "Welcome to our OS emulator!"))
 bg.addButton(Button('U', "res/button/txt_btn.bmp", width // 2 - 35, 20, term.appID, font=framework.raster, content="TERMINAL"))
 term.addButton(Button('D', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
 
@@ -238,7 +237,6 @@ while True:
 
 !LOC=/bin/
 !FNAME=vis.py
-
 # vis.py
 # Basic CLI text editor
 

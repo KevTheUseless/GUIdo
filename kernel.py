@@ -85,7 +85,8 @@ class App:
 		self.pic = Pic(picName)
 		self.appID = 0
 		self.btnList = []
-		self.txtList = []
+		self.tooltipList = []
+		self.txtFieldList = []
 		self.secretList = []
 	def draw(self, screen):
 		if framework.appID != self.appID:
@@ -93,11 +94,11 @@ class App:
 		screen.blit(self.pic.img, (0, 0))
 		for button in self.btnList:
 			button.draw(screen)
-		for txt in self.txtList:
-			txt.draw(screen)
+		for tooltip in self.tooltipList:
+			tooltip.draw(screen)
 	def addButton(self, b):
 		self.btnList.append(b)
-	def addTxt(self, txt, font, x, y, c, rect):
+	def addTooltip(self, txt, font, x, y, c, rect):
 		t = Txt(txt, font, x, y, c, rect)
 		self.txtList.append(t)
 	def mouseDown(self, pos, button):
@@ -157,7 +158,7 @@ class Button:
 		else:
 			self.status = 0
 
-class Txt:
+class Tooltip:
 	def __init__(self, txt, font, x, y, c, rect):
 		self.txt = txt
 		self.img = font.render(txt, True, c)
@@ -174,7 +175,7 @@ class Secret:
 		self.dialogID = dialogID
 	def mouseDown(self, pos, button):
 		if self.rect.collidepoint(pos):
-			framework.dialogs.pop(len(framework.dialogs) - 1)
+			framework.dialogs.pop()
 			print(len(framework.dialogs) - 1)
 
 class DlgStatus(Enum):
@@ -185,8 +186,8 @@ class DlgStatus(Enum):
 class Dialog:
 	def __init__(self, title, content, status = DlgStatus.INFO):
 		self.img = pygame.image.load("res/dialog/dialog.png")
-		self.icon = pygame.image.load("res/dialog/" + str(status) + ".bmp")
-		self.icon.set_colorkey((255, 255, 255))
+		self.icon = pygame.transform.scale(pygame.image.load("res/dialog/" + str(status) + ".bmp"), (32, 32))
+		self.icon.set_colorkey((255, 0, 255))
 		self.title = framework.raster.render(title, True, (255, 255, 255))
 		self.content = lineWrap(content, 35)
 		self.dialogID = 0
@@ -208,8 +209,7 @@ term = App("res/term.jpg")
 framework.appID = bg.appID
 framework.addApp(bg)
 framework.addApp(term)
-framework.addDialog(Dialog("Hey there!", "Welcome to our OS emulator! As you can see, line wrap is working perfectly here. Now we just need some art for the icons."))
-framework.addDialog(Dialog("Hi!", "Another one"))
+framework.addDialog(Dialog("Hey there!", "Welcome to our OS emulator!"))
 bg.addButton(Button('U', "res/button/txt_btn.bmp", width // 2 - 35, 20, term.appID, font=framework.raster, content="TERMINAL"))
 term.addButton(Button('D', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
 
