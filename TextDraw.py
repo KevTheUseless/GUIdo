@@ -3,15 +3,15 @@
 
 import pygame, sys
 
-def wrap(txtBuffer):
+def wrap(txtBuffer, w = 80):
 	lines = []
 	temp = ""
-	for c in txtBuffer:
-		if c == '\n':
+	for i in range(len(txtBuffer)):
+		if txtBuffer[i] == '\n' or (i != 0 and i % w == 0):
 			lines.append(temp)
 			temp = ""
 		else:
-			temp += c
+			temp += txtBuffer[i]
 	lines.append(temp)
 	return lines
 
@@ -65,7 +65,7 @@ while True:
 			else:
 				if 32 <= event.key <= 126:
 					# ↓ Also magic! ↓
-					if (44 <= event.key <= 57 or event.key == 59 or event.key == 61 or event.key == 96 or 91 <= event.key <= 93 or event.key == 39) and shift:
+					if (event.key == 39 or 44 <= event.key <= 57 or event.key == 59 or event.key == 61 or event.key == 96 or 91 <= event.key <= 93) and shift:
 						txtBuffer.append(caps[chr(event.key)])
 					elif 97 <= event.key <= 122 and (shift or capsLock):
 						txtBuffer.append(caps[chr(event.key)])
