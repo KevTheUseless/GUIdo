@@ -85,7 +85,8 @@ class App:
 		self.pic = Pic(picName)
 		self.appID = 0
 		self.btnList = []
-		self.txtList = []
+		self.tooltipList = []
+		self.txtFieldList = []
 		self.secretList = []
 	def draw(self, screen):
 		if framework.appID != self.appID:
@@ -93,11 +94,11 @@ class App:
 		screen.blit(self.pic.img, (0, 0))
 		for button in self.btnList:
 			button.draw(screen)
-		for txt in self.txtList:
-			txt.draw(screen)
+		for tooltip in self.tooltipList:
+			tooltip.draw(screen)
 	def addButton(self, b):
 		self.btnList.append(b)
-	def addTxt(self, txt, font, x, y, c, rect):
+	def addTooltip(self, txt, font, x, y, c, rect):
 		t = Txt(txt, font, x, y, c, rect)
 		self.txtList.append(t)
 	def mouseDown(self, pos, button):
@@ -157,7 +158,7 @@ class Button:
 		else:
 			self.status = 0
 
-class Txt:
+class Tooltip:
 	def __init__(self, txt, font, x, y, c, rect):
 		self.txt = txt
 		self.img = font.render(txt, True, c)
@@ -174,7 +175,7 @@ class Secret:
 		self.dialogID = dialogID
 	def mouseDown(self, pos, button):
 		if self.rect.collidepoint(pos):
-			framework.dialogs.pop(len(framework.dialogs) - 1)
+			framework.dialogs.pop()
 			print(len(framework.dialogs) - 1)
 
 class DlgStatus(Enum):

@@ -1,0 +1,6 @@
+- Integrate TextDraw.py and the buffer provided into kernel.py
+  Specifications:
+  - Should contain a variable that controls the availability of the buffer
+  - Because of this, apps will trigger the buffer by setting the value of that variable
+  - Should have a button to go back (to the desktop), which means integrating a button too
+  - Preferably make this into a class and make the buffer sizeable 
