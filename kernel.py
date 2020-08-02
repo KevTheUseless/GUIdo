@@ -27,7 +27,7 @@ class Kernel:
 		self.screen = pygame.display.set_mode((width, height))
 		pygame.display.set_caption("Windows 95 Simulated")
 		self.clock = pygame.time.Clock()
-		self.raster = pygame.font.Font("res/vga936.fon", 32)
+		self.raster = pygame.font.Font("res/pkmndp.ttf", 19)
 		self.speed = 5
 		self.mousePos = (0, 0)
 		self.apps = []
@@ -85,13 +85,15 @@ class App:
 		for tooltip in self.tooltipList:
 			tooltip.draw(screen)
 		if self.txtFieldEnabled:
-			self.txtField.draw(screen, self.txtField.wrap(self.txtField.txtBuffer))
+			self.txtField.content = self.txtField.wrap(self.txtField.txtBuffer)
+			self.txtField.content = self.txtField.content[-self.txtField.h:]
+			self.txtField.draw(screen, self.txtField.content)
 	def addButton(self, b):
 		self.btnList.append(b)
 	def addTooltip(self, txt, font, x, y, c, rect):
 		tt = Tooltip(txt, font, x, y, c, rect)
 		self.txtList.append(tt)
-	def enableTxtField(self, x, y, w, h, placeholder = "/$ "):
+	def enableTxtField(self, x, y, w, h, placeholder = "/# "):
 		self.txtFieldEnabled = True
 		self.txtField.x, self.txtField.y = x, y
 		self.txtField.w, self.txtField.h = w, h
@@ -163,9 +165,10 @@ class TxtField:
 		self.w, self.h = w, h
 		self.placeholder = placeholder
 		self.txtBuffer = []
+		self.content = []
 		self.caps = { '`': '~', '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', '-': '_', '=': '+', '[': '{', ']': '}', '\\': '|', ';': ':', '\'': '"', ',': '<', '.': '>', '/': '?', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H', 'i': 'I', 'j': 'J', 'k': 'K', 'l': 'L', 'm': 'M', 'n': 'N', 'o': 'O', 'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W', 'x': 'X', 'y': 'Y', 'z': 'Z' }
 		self.shift, self.capsLock = False, False
-		self.raster = pygame.font.Font("res/vga936.fon", 32)
+		self.raster = pygame.font.Font("res/pkmndp.ttf", 28)
 	def wrap(self, txtBuffer):
 		lines = []
 		temp = self.placeholder
@@ -184,7 +187,7 @@ class TxtField:
 		for line in lines:
 			img = self.raster.render(line, True, c)
 			screen.blit(img, (0, y))
-			y += 16
+			y += 30
 	def keyUp(self, key):
 		if key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
 			self.shift = False
@@ -209,7 +212,7 @@ class TxtField:
 			if 32 <= key <= 126:
 				# ↓ Also magic! ↓
 				if (key == 39 or 44 <= key <= 57 or key == 59 or key == 61 or key == 96 or 91 <= key <= 93) and self.shift:
-					txtBuffer.append(caps[chr(key)])
+					self.txtBuffer.append(self.caps[chr(key)])
 				elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
 					self.txtBuffer.append(self.caps[chr(key)])
 				else:
@@ -267,7 +270,7 @@ framework.addApp(term)
 framework.addDialog(Dialog("Hey there!", "Welcome to our OS emulator!"))
 bg.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, term.appID, font=framework.raster, content="TERMINAL"))
 term.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
-term.enableTxtField(0, 0, 60, 60)
+term.enableTxtField(0, 0, 80, 20)
 
 while True:
 	for event in pygame.event.get():
