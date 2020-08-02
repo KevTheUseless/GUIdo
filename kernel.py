@@ -6,17 +6,6 @@ from enum import Enum
 
 width, height = 1024, 768
 
-def lineWrap(txt, w):
-	processed = []
-	temp = ""
-	for i in range(txt.__len__()):
-		if i != 0 and i % w == 0:
-			processed.append(framework.raster.render(temp, True, (0, 0, 0)))
-			temp = ""
-		temp += txt[i]
-	processed.append(framework.raster.render(temp, True, (0, 0, 0)))
-	return processed
-
 class Pic(object):
 	def __init__(self, fileName):
 		img = pygame.image.load(fileName)
@@ -38,7 +27,6 @@ class Kernel:
 		self.screen = pygame.display.set_mode((width, height))
 		pygame.display.set_caption("Windows 95 Simulated")
 		self.clock = pygame.time.Clock()
-		self.font32 = pygame.font.Font("res/segoeui.ttf", 32)
 		self.raster = pygame.font.Font("res/vga936.fon", 32)
 		self.speed = 5
 		self.mousePos = (0, 0)
@@ -63,11 +51,10 @@ class Kernel:
 		dialog.dialogID = len(self.dialogs)
 		dialog.closeBtn = Secret((dialog.x + 357, dialog.y + 6, 17, 16), dialog.dialogID)
 		self.dialogs.append(dialog)
-	# TODO: Add KEYUP/KEYDOWN support
 	def keyUp(self, key):
-		return
+		self.apps[self.appID].keyUp(key)
 	def keyDown(self, key):
-		return
+		self.apps[self.appID].keyDown(key)
 	def mouseDown(self, pos, button):
 		self.apps[self.appID].mouseDown(pos, button)
 		try:
@@ -86,7 +73,8 @@ class App:
 		self.appID = 0
 		self.btnList = []
 		self.tooltipList = []
-		self.txtFieldList = []
+		self.txtField = TxtField(0, 0, 0, 0)
+		self.txtFieldEnabled = False
 		self.secretList = []
 	def draw(self, screen):
 		if framework.appID != self.appID:
@@ -96,11 +84,18 @@ class App:
 			button.draw(screen)
 		for tooltip in self.tooltipList:
 			tooltip.draw(screen)
+		if self.txtFieldEnabled:
+			self.txtField.draw(screen, self.txtField.wrap(self.txtField.txtBuffer))
 	def addButton(self, b):
 		self.btnList.append(b)
 	def addTooltip(self, txt, font, x, y, c, rect):
-		t = Txt(txt, font, x, y, c, rect)
-		self.txtList.append(t)
+		tt = Tooltip(txt, font, x, y, c, rect)
+		self.txtList.append(tt)
+	def enableTxtField(self, x, y, w, h, placeholder = "/$ "):
+		self.txtFieldEnabled = True
+		self.txtField.x, self.txtField.y = x, y
+		self.txtField.w, self.txtField.h = w, h
+		self.txtField.placeholder = placeholder
 	def mouseDown(self, pos, button):
 		for btn in self.btnList:
 			btn.mouseDown(pos, button)
@@ -113,14 +108,15 @@ class App:
 		framework.mousePos = pos
 		for btn in self.btnList:
 			btn.mouseMove(pos)
-	def keyUp(self, button):
-		framework.keyUp(button)
-	def keyDown(self, button):
-		framework.keyDown(button)
+	def keyUp(self, key):
+		if self.txtFieldEnabled:
+			self.txtField.keyUp(key)
+	def keyDown(self, key):
+		if self.txtFieldEnabled:
+			self.txtField.keyDown(key)
 
 class Button:
-	def __init__(self, name, picFile, x, y, appID, **txt):
-		self.name = name
+	def __init__(self, picFile, x, y, appID, **txt):
 		self.img = pygame.image.load(picFile).convert()
 		self.w, self.h = self.img.get_width() // 3, self.img.get_height()
 		self.x, self.y = x, y
@@ -142,16 +138,8 @@ class Button:
 		self.status = 0
 		if not self.rect.collidepoint(pos):
 			return
-		if self.name == 'U':
-			framework.apps[self.appID].pic.draw(framework.screen, framework.speed)
-		if self.name == 'D':
-			framework.apps[self.appID].pic.draw(framework.screen, framework.speed)
-		if self.name == 'L':
-			framework.apps[self.appID].pic.draw(framework.screen, framework.speed)
-		if self.name == 'R':
-			framework.apps[self.appID].pic.draw(framework.screen, framework.speed)
+		framework.apps[self.appID].pic.draw(framework.screen, framework.speed)
 		framework.appID = self.appID
-
 	def mouseMove(self, pos):
 		if self.rect.collidepoint(pos):
 			self.status = 1
@@ -169,6 +157,64 @@ class Tooltip:
 		if self.rect.collidepoint(framework.mousePos):
 			screen.blit(self.img, (self.x, self.y))
 
+class TxtField:
+	def __init__(self, x, y, w, h, placeholder = ""):
+		self.x, self.y = x, y
+		self.w, self.h = w, h
+		self.placeholder = placeholder
+		self.txtBuffer = []
+		self.caps = { '`': '~', '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', '-': '_', '=': '+', '[': '{', ']': '}', '\\': '|', ';': ':', '\'': '"', ',': '<', '.': '>', '/': '?', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H', 'i': 'I', 'j': 'J', 'k': 'K', 'l': 'L', 'm': 'M', 'n': 'N', 'o': 'O', 'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W', 'x': 'X', 'y': 'Y', 'z': 'Z' }
+		self.shift, self.capsLock = False, False
+		self.raster = pygame.font.Font("res/vga936.fon", 32)
+	def wrap(self, txtBuffer):
+		lines = []
+		temp = self.placeholder
+		for i in range(len(txtBuffer)):
+			if txtBuffer[i] == '\n':
+				lines.append(temp)
+				temp = self.placeholder
+			elif (i != 0 and i % self.w == 0):
+				lines.append(temp)
+				temp = ""
+			else:
+				temp += txtBuffer[i]
+		lines.append(temp)
+		return lines
+	def draw(self, screen, lines, c = (255, 255, 255), y = 0):
+		for line in lines:
+			img = self.raster.render(line, True, c)
+			screen.blit(img, (0, y))
+			y += 16
+	def keyUp(self, key):
+		if key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
+			self.shift = False
+		elif key == pygame.K_CAPSLOCK:
+			self.capsLock = 1 - self.capsLock
+	def keyDown(self, key):
+		if key == pygame.K_BACKSPACE:
+			try:
+				self.txtBuffer.pop()
+			except:
+				pass
+		elif key == pygame.K_RETURN:
+			self.txtBuffer.append('\n')
+		elif key == pygame.K_TAB:
+			for i in range(4):
+				self.txtBuffer.append(' ')
+		elif key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
+			self.shift = True
+		elif key == pygame.K_CAPSLOCK:
+			self.capsLock = 1 - self.capsLock
+		else:
+			if 32 <= key <= 126:
+				# ↓ Also magic! ↓
+				if (key == 39 or 44 <= key <= 57 or key == 59 or key == 61 or key == 96 or 91 <= key <= 93) and self.shift:
+					txtBuffer.append(caps[chr(key)])
+				elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
+					self.txtBuffer.append(self.caps[chr(key)])
+				else:
+					self.txtBuffer.append(chr(key))
+
 class Secret:
 	def __init__(self, rect, dialogID):
 		self.rect = pygame.Rect(rect)
@@ -176,7 +222,6 @@ class Secret:
 	def mouseDown(self, pos, button):
 		if self.rect.collidepoint(pos):
 			framework.dialogs.pop()
-			print(len(framework.dialogs) - 1)
 
 class DlgStatus(Enum):
 	INFO = 0
@@ -189,11 +234,21 @@ class Dialog:
 		self.icon = pygame.transform.scale(pygame.image.load("res/dialog/" + str(status) + ".bmp"), (32, 32))
 		self.icon.set_colorkey((255, 0, 255))
 		self.title = framework.raster.render(title, True, (255, 255, 255))
-		self.content = lineWrap(content, 35)
+		self.content = self.wrap(content, 35)
 		self.dialogID = 0
 		self.w, self.h = self.img.get_size()
 		self.x, self.y = 322, 284
 		self.closeBtn = None
+	def wrap(self, txt, w):
+		processed = []
+		temp = ""
+		for i in range(txt.__len__()):
+			if i != 0 and i % w == 0:
+				processed.append(framework.raster.render(temp, True, (0, 0, 0)))
+				temp = ""
+			temp += txt[i]
+		processed.append(framework.raster.render(temp, True, (0, 0, 0)))
+		return processed
 	def draw(self, screen):
 		screen.blit(self.img, (self.x, self.y))
 		screen.blit(self.title, (self.x + 10, self.y + 6))
@@ -210,8 +265,9 @@ framework.appID = bg.appID
 framework.addApp(bg)
 framework.addApp(term)
 framework.addDialog(Dialog("Hey there!", "Welcome to our OS emulator!"))
-bg.addButton(Button('U', "res/button/txt_btn.bmp", width // 2 - 35, 20, term.appID, font=framework.raster, content="TERMINAL"))
-term.addButton(Button('D', "res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
+bg.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, term.appID, font=framework.raster, content="TERMINAL"))
+term.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
+term.enableTxtField(0, 0, 60, 60)
 
 while True:
 	for event in pygame.event.get():
@@ -220,10 +276,8 @@ while True:
 			sys.exit()
 		if event.type == pygame.KEYDOWN:
 			framework.keyDown(event.key)
-			print(event.key)
 		elif event.type == pygame.KEYUP:
 			framework.keyUp(event.key)
-			print(event.key)
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			framework.mouseDown(event.pos, event.button)
 		elif event.type == pygame.MOUSEBUTTONUP:
