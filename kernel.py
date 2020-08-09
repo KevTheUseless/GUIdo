@@ -36,7 +36,7 @@ class Kernel:
 		self.screen = pygame.display.set_mode((width, height))
 		pygame.display.set_caption("Winnux 58")
 		self.clock = pygame.time.Clock()
-		self.raster = pygame.font.Font("res/pkmndp.ttf", 19)
+		self.raster = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 15)
 		self.speed = 5
 		self.mousePos = (0, 0)
 		self.apps = []
@@ -84,6 +84,8 @@ class App:
 		self.tooltipList = []
 		self.txtField = TxtField(0, 0, 0, 0)
 		self.txtFieldEnabled = False
+		self.canvas = pygame.Surface((width, height - 60))
+		self.canvasEnabled = False
 		self.secretList = []
 	def draw(self, screen):
 		if framework.appID != self.appID:
@@ -97,16 +99,26 @@ class App:
 			self.txtField.content = self.txtField.wrap(self.txtField.txtBuffer)
 			self.txtField.content = self.txtField.content[-self.txtField.h:]
 			self.txtField.draw(screen, self.txtField.content)
+		if self.canvasEnabled:
+			framework.screen.blit(self.canvas, (0, 60))
 	def addButton(self, b):
 		self.btnList.append(b)
 	def addTooltip(self, txt, font, x, y, c, rect):
 		tt = Tooltip(txt, font, x, y, c, rect)
 		self.txtList.append(tt)
-	def enableTxtField(self, x, y, w, h, placeholder="/# "):
+	def enableTxtField(self, x, y, w, h, placeholder = "/# "):
+		if self.canvasEnabled:
+			print("Only one of either the text field or the canvas can be enabled in an App.")
+			return
 		self.txtFieldEnabled = True
 		self.txtField.x, self.txtField.y = x, y
 		self.txtField.w, self.txtField.h = w, h
 		self.txtField.placeholder = placeholder
+	def enableCanvas(self):
+		if self.txtFieldEnabled:
+			print("Only one of either the text field or the canvas can be enabled in an App.")
+			return
+		self.canvasEnabled = True
 	def mouseDown(self, pos, button):
 		for btn in self.btnList:
 			btn.mouseDown(pos, button)
@@ -125,6 +137,9 @@ class App:
 	def keyDown(self, key):
 		if self.txtFieldEnabled:
 			self.txtField.keyDown(key)
+		if self.canvasEnabled:
+			if self.appID == snake.appID:
+				pass
 
 class Button:
 	def __init__(self, picFile, x, y, appID, **txt):
@@ -178,7 +193,7 @@ class TxtField:
 		self.content = []
 		self.caps = { '`': '~', '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', '-': '_', '=': '+', '[': '{', ']': '}', '\\': '|', ';': ':', '\'': '"', ',': '<', '.': '>', '/': '?', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H', 'i': 'I', 'j': 'J', 'k': 'K', 'l': 'L', 'm': 'M', 'n': 'N', 'o': 'O', 'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W', 'x': 'X', 'y': 'Y', 'z': 'Z' }
 		self.shift, self.capsLock = False, False
-		self.raster = pygame.font.Font("res/pkmndp.ttf", 28)
+		self.raster = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 28)
 	def wrap(self, txtBuffer):
 		lines = []
 		temp = self.placeholder
@@ -240,7 +255,6 @@ class TxtField:
 			self.capsLock = 1 - self.capsLock
 		else:
 			if 32 <= key <= 126:
-				# ↓ Also magic! ↓
 				if (key == 39 or 44 <= key <= 57 or key == 59 or key == 61 or key == 96 or 91 <= key <= 93) and self.shift:
 					self.txtBuffer.append(self.caps[chr(key)])
 				elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
@@ -266,7 +280,8 @@ class Dialog:
 		self.img = pygame.image.load("res/dialog/dialog.png")
 		self.icon = pygame.transform.scale(pygame.image.load("res/dialog/" + str(status) + ".bmp"), (32, 32))
 		self.icon.set_colorkey((255, 0, 255))
-		self.title = framework.raster.render(title, True, (255, 255, 255))
+		self.raster = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 16)
+		self.title = self.raster.render(title, True, (255, 255, 255))
 		self.content = self.wrap(content, 35)
 		self.dialogID = 0
 		self.w, self.h = self.img.get_size()
@@ -277,10 +292,10 @@ class Dialog:
 		temp = ""
 		for i in range(txt.__len__()):
 			if i != 0 and i % w == 0:
-				processed.append(framework.raster.render(temp, True, (0, 0, 0)))
+				processed.append(self.raster.render(temp, True, (0, 0, 0)))
 				temp = ""
 			temp += txt[i]
-		processed.append(framework.raster.render(temp, True, (0, 0, 0)))
+		processed.append(self.raster.render(temp, True, (0, 0, 0)))
 		return processed
 	def draw(self, screen):
 		screen.blit(self.img, (self.x, self.y))
@@ -293,7 +308,8 @@ class Dialog:
 
 framework = Kernel()
 bg = App("res/clouds.jpg")
-term = App("res/term.jpg")
+term = App("res/blank.jpg")
+snake = App("res/blank.jpg")
 framework.appID = bg.appID
 framework.addApp(bg)
 framework.addApp(term)
