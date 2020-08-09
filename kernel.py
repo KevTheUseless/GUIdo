@@ -1,8 +1,17 @@
 # kernel.py
 # Core of our OS
 
-import pygame, sys, random
+import pygame, sys, random, io
+from math import *
+from contextlib import redirect_stdout
+
 from enum import Enum
+
+from ls import ls
+from rm import rm
+from pwd import pwd
+from cat import cat
+from calc import calc
 
 width, height = 1024, 768
 
@@ -93,7 +102,7 @@ class App:
 	def addTooltip(self, txt, font, x, y, c, rect):
 		tt = Tooltip(txt, font, x, y, c, rect)
 		self.txtList.append(tt)
-	def enableTxtField(self, x, y, w, h, placeholder = "/# "):
+	def enableTxtField(self, x, y, w, h, placeholder="/# "):
 		self.txtFieldEnabled = True
 		self.txtField.x, self.txtField.y = x, y
 		self.txtField.w, self.txtField.h = w, h
@@ -160,10 +169,11 @@ class Tooltip:
 			screen.blit(self.img, (self.x, self.y))
 
 class TxtField:
-	def __init__(self, x, y, w, h, placeholder = ""):
+	def __init__(self, x, y, w, h):
 		self.x, self.y = x, y
 		self.w, self.h = w, h
-		self.placeholder = placeholder
+		self.pwd = '/'
+		self.placeholder = '%s# ' % self.pwd
 		self.txtBuffer = []
 		self.content = []
 		self.caps = { '`': '~', '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', '-': '_', '=': '+', '[': '{', ']': '}', '\\': '|', ';': ':', '\'': '"', ',': '<', '.': '>', '/': '?', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H', 'i': 'I', 'j': 'J', 'k': 'K', 'l': 'L', 'm': 'M', 'n': 'N', 'o': 'O', 'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W', 'x': 'X', 'y': 'Y', 'z': 'Z' }
@@ -176,6 +186,9 @@ class TxtField:
 			if txtBuffer[i] == '\n':
 				lines.append(temp)
 				temp = self.placeholder
+			elif txtBuffer[i] == '\r':
+				temp = ''
+				lines.append('')
 			elif (i != 0 and i % self.w == 0):
 				lines.append(temp)
 				temp = ""
@@ -188,6 +201,15 @@ class TxtField:
 			img = self.raster.render(line, True, c)
 			screen.blit(img, (0, y))
 			y += 30
+
+	def exec_cmd(self, on_scr):
+		cmd = on_scr.split()
+		main = cmd.pop()
+		output = io.StringIO()
+		with redirect_stdout(output):
+			exec("%s('%s', %s)" % (main, self.pwd, str(cmd)))
+		self.txtBuffer.append(output.getvalue())
+
 	def keyUp(self, key):
 		if key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
 			self.shift = False
@@ -195,11 +217,19 @@ class TxtField:
 			self.capsLock = 1 - self.capsLock
 	def keyDown(self, key):
 		if key == pygame.K_BACKSPACE:
-			try:
-				self.txtBuffer.pop()
-			except:
-				pass
+			if (self.txtBuffer and self.txtBuffer[-1] != '\n') or not self.txtBuffer:
+				try:
+					self.txtBuffer.pop()
+				except:
+					pass
 		elif key == pygame.K_RETURN:
+			cmd = ''
+			i = -1
+			while len(self.txtBuffer) > -i-1 and self.txtBuffer[i] != '\n':
+				cmd = self.txtBuffer[i] + cmd
+				i -= 1
+			self.txtBuffer.append('\r')
+			self.exec_cmd(cmd)
 			self.txtBuffer.append('\n')
 		elif key == pygame.K_TAB:
 			for i in range(4):
@@ -232,7 +262,7 @@ class DlgStatus(Enum):
 	ERROR = 2
 
 class Dialog:
-	def __init__(self, title, content, status = DlgStatus.INFO):
+	def __init__(self, title, content, status=DlgStatus.INFO):
 		self.img = pygame.image.load("res/dialog/dialog.png")
 		self.icon = pygame.transform.scale(pygame.image.load("res/dialog/" + str(status) + ".bmp"), (32, 32))
 		self.icon.set_colorkey((255, 0, 255))
