@@ -25,7 +25,7 @@ class Kernel:
 	def __init__(self):
 		pygame.init()
 		self.screen = pygame.display.set_mode((width, height))
-		pygame.display.set_caption("Windows 95 Simulated")
+		pygame.display.set_caption("Winnux 58")
 		self.clock = pygame.time.Clock()
 		self.raster = pygame.font.Font("res/pkmndp.ttf", 19)
 		self.speed = 5
@@ -267,7 +267,7 @@ term = App("res/term.jpg")
 framework.appID = bg.appID
 framework.addApp(bg)
 framework.addApp(term)
-framework.addDialog(Dialog("Hey there!", "Welcome to our OS emulator!"))
+framework.addDialog(Dialog("Hey there!", "Welcome to Winnux 58!"))
 bg.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, term.appID, font=framework.raster, content="TERMINAL"))
 term.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
 term.enableTxtField(0, 0, 80, 20)
