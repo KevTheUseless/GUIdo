@@ -1,7 +1,7 @@
 # kernel.py
 # Core of our OS
 
-import pygame, sys, random
+import pygame, sys, random, time
 from enum import Enum
 
 width, height = 1024, 768
@@ -76,7 +76,6 @@ class App:
 		self.txtField = TxtField(0, 0, 0, 0)
 		self.txtFieldEnabled = False
 		self.canvas = pygame.Surface((width, height - 60))
-		self.canvas.fill((40, 40, 40))
 		self.canvasEnabled = False
 		self.secretList = []
 	def draw(self, screen):
@@ -93,7 +92,6 @@ class App:
 			self.txtField.draw(screen, self.txtField.content)
 		if self.canvasEnabled:
 			if self.appID == snake.appID:
-				self.canvas.fill((40, 40, 40))
 				snakeGame.draw(self.canvas)
 				snakeGame.move()
 			framework.screen.blit(self.canvas, (0, 60))
@@ -140,6 +138,7 @@ class App:
 class SnakeGame(object):
 	def __init__(self):
 		self.tileWidth = 32
+		self.x0, self.y0 = 192, 144
 		self.snakeLen = 1
 		self.snakePos = []
 		self.direction = 0
@@ -148,12 +147,22 @@ class SnakeGame(object):
 		self.sx, self.sy = 0, 0
 		self.ix, self.iy = random.randint(0, 19), random.randint(0, 14)
 		self.lost = 0
+		self.bigFont = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 100)
+		self.smallFont = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 60)
+		self.bg = pygame.Surface((640, 480))
+		self.bg.fill((255, 255, 255))
+		self.gameOver = self.bigFont.render("Game Over!", True, (255, 255, 255))
+		self.restart = self.smallFont.render("PRESS R TO RESTART", True, (255, 255, 255))
 	def draw(self, canvas):
+		canvas.fill((40, 40, 40))
 		if self.lost == 1:
-			framework.addDialog(Dialog("Game Over!", "Game over! Press R to restart!", DlgStatus.WARNING))
+			canvas.blit(self.gameOver, (250, 200))
+			canvas.blit(self.restart, (230, 300))
+			return
+		canvas.blit(self.bg, (self.x0, self.y0))
 		for pos in self.snakePos[-self.snakeLen:]:
-			pygame.draw.rect(canvas, (60, 110, 5), (pos[0] * self.tileWidth, pos[1] * self.tileWidth, self.tileWidth, self.tileWidth))
-		pygame.draw.rect(canvas, (190, 30, 50), (self.ix * self.tileWidth, self.iy * self.tileWidth, self.tileWidth, self.tileWidth))
+			pygame.draw.rect(canvas, (60, 110, 5), (self.x0 + pos[0] * self.tileWidth, self.y0 + pos[1] * self.tileWidth, self.tileWidth, self.tileWidth))
+		pygame.draw.rect(canvas, (190, 30, 50), (self.x0 + self.ix * self.tileWidth, self.y0 + self.iy * self.tileWidth, self.tileWidth, self.tileWidth))
 	def move(self):
 		if self.lost == 1:
 			return
@@ -163,7 +172,7 @@ class SnakeGame(object):
 			self.lost = 1
 		self.snakePos.append((self.sx, self.sy))
 		if self.sx == self.ix and self.sy == self.iy:
-			self.ix, self.iy = random.randint(0, 20), random.randint(0, 15)
+			self.ix, self.iy = random.randint(0, 19), random.randint(0, 14)
 			self.snakeLen += 1
 	def keyDown(self, key):
 		if key == pygame.K_UP:
@@ -178,7 +187,7 @@ class SnakeGame(object):
 			self.snakeLen = 1
 			self.snakePos = []
 			self.sx, self.sy = 0, 0
-			self.ix, self.iy = random.randint(0, 20), random.randint(0, 15)
+			self.ix, self.iy = random.randint(0, 19), random.randint(0, 14)
 			self.lost = 0
 
 class Button:
@@ -336,7 +345,8 @@ framework.addApp(bg)
 framework.addApp(term)
 framework.addApp(snake)
 framework.addDialog(Dialog("Hey there!", "Welcome to Winnux 58!"))
-bg.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, snake.appID, font=framework.raster, content="TERMINAL"))
+bg.addButton(Button("res/button/txt_btn.bmp", 20, 20, term.appID, font=framework.raster, content="TERMINAL"))
+bg.addButton(Button("res/button/txt_btn.bmp", 20, 60, snake.appID, font=framework.raster, content="SNAKE"))
 term.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
 snake.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
 term.enableTxtField(0, 0, 80, 20)
