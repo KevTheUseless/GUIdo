@@ -1,7 +1,7 @@
+# TODO: Rewrite vis file I/O
+
 # vis.py
 # Basic CLI text editor
-
-import sys
 
 # Accepts text input from user
 def write(f):
@@ -27,7 +27,7 @@ while True:
 	cmd = input()
 	if cmd == "i":
 		f = open(sys.argv[1], "w+")
-		write(f);
+		write(f)
 	elif cmd == "a":
 		f = open(sys.argv[1], "a+")
 		write(f)
