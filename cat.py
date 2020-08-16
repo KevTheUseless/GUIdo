@@ -2,7 +2,7 @@
 # Shows the contents of a given file (in pure text)
 # Only works when file is in pwd (for now)
 
-def cat(working_dir, *args):
+def cat(working_dir, args):
 	if not args:
 		print("Missing argument.\nUsage: cat <filename(s)>")
 		return

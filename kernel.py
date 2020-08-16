@@ -170,14 +170,13 @@ class App:
 	def addTooltip(self, txt, font, x, y, c, rect):
 		tt = Tooltip(txt, font, x, y, c, rect)
 		self.txtList.append(tt)
-	def enableTxtField(self, x, y, w, h, placeholder = "/$ "):
+	def enableTxtField(self, x, y, w, h):
 		if self.canvasEnabled:
 			print("Only one of either the text field or the canvas can be enabled in an App.")
 			return
 		self.txtFieldEnabled = True
 		self.txtField.x, self.txtField.y = x, y
 		self.txtField.w, self.txtField.h = w, h
-		self.txtField.placeholder = placeholder
 	def enableCanvas(self):
 		if self.txtFieldEnabled:
 			print("Only one of either the text field or the canvas can be enabled in an App.")
@@ -252,22 +251,25 @@ class TxtField:
 		self.x, self.y = x, y
 		self.w, self.h = w, h
 		self.pwd = '/'
-		self.placeholder = '%s# ' % self.pwd
+		self.placeholder = ['%s# ' % self.pwd]
 		self.txtBuffer = []
 		self.content = []
 		self.caps = { '`': '~', '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', '-': '_', '=': '+', '[': '{', ']': '}', '\\': '|', ';': ':', '\'': '"', ',': '<', '.': '>', '/': '?', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H', 'i': 'I', 'j': 'J', 'k': 'K', 'l': 'L', 'm': 'M', 'n': 'N', 'o': 'O', 'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W', 'x': 'X', 'y': 'Y', 'z': 'Z' }
 		self.shift, self.capsLock = False, False
 		self.raster = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 28)
 	def wrap(self, txtBuffer):
+		print(self.placeholder)
 		lines = []
-		temp = self.placeholder
+		ptr = 0
+		temp = self.placeholder[ptr]
 		for i in range(len(txtBuffer)):
 			if txtBuffer[i] == '\n':
 				lines.append(temp)
-				temp = self.placeholder
+				ptr += 1
+				temp = self.placeholder[ptr]
 			elif txtBuffer[i] == '\r':
+				lines.append(temp)
 				temp = ''
-				lines.append('')
 			elif (i != 0 and i % self.w == 0):
 				lines.append(temp)
 				temp = ""
@@ -280,15 +282,23 @@ class TxtField:
 			img = self.raster.render(line, True, c)
 			screen.blit(img, (0, y))
 			y += 30
+
+	def cd(self, dir_name):
+		self.pwd += dir_name + '/'
+
 	def exec_cmd(self, on_scr):
 		cmd = on_scr.split()
 		try: main = cmd.pop(0)
-		except: pass
+		except: main = None
 		output = io.StringIO()
 		with redirect_stdout(output):
-			try: exec("%s('%s', %s)" % (main, self.pwd, str(cmd)))
-			except: print("%s: command not found" % on_scr, end='')
-		self.txtBuffer.append(output.getvalue())
+			if main:
+				if main == 'cd': self.cd(cmd[0])
+				else: exec("%s('%s', %s)" % (main, self.pwd, str(cmd)))
+			else: print("%s: command not found" % on_scr, end='')
+		self.txtBuffer.append('\r')
+		self.txtBuffer += list(output.getvalue().rstrip('\n'))
+		self.placeholder.append('%s# ' % self.pwd)
 	def keyUp(self, key):
 		if key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
 			self.shift = False
@@ -305,7 +315,6 @@ class TxtField:
 			while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\n':
 				cmd = self.txtBuffer[i] + cmd
 				i -= 1
-			self.txtBuffer.append('\r')
 			self.exec_cmd(cmd)
 			self.txtBuffer.append('\n')
 		elif key == pygame.K_TAB:

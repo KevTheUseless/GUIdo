@@ -1,7 +1,7 @@
 # The `ls` command
 # Shows all files in pwd
 
-def ls(working_dir, *args):
+def ls(working_dir, args):
 	files = open("files.img", 'r+')
 	lines = files.read().strip('\0').split('\n')
 	for i, line in enumerate(lines):

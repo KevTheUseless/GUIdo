@@ -4,7 +4,7 @@
 
 from math import *
 
-def calc(working_dir, *args):    # arguments are completely unused
+def calc(working_dir, args):    # arguments are completely unused
 	expr = input()
 	while expr != 'q':
 		result = None
