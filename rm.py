@@ -1,7 +1,7 @@
 # The `rm` command
 # Removes a file in pwd (hopefully)
 
-def rm(working_dir, *args):
+def rm(working_dir, args):
 	files = open("files.img", 'r+')
 	to_be_written = []
 	target = args[0]
