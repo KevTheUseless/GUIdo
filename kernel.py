@@ -1,19 +1,80 @@
 # kernel.py
 # Core of our OS
 
-import pygame, sys, random, io
+import pygame, sys, random, time, io
 from math import *
 from contextlib import redirect_stdout
-
 from enum import Enum
 
-from ls import ls
-from rm import rm
-from pwd import pwd
-from cat import cat
-from calc import calc
-
 width, height = 1024, 768
+
+def pwd(working_dir, *args):
+	print(working_dir, end='')
+
+def ls(working_dir, *args):
+	files = open("files.img", 'r+')
+	lines = files.read().strip('\0').split('\n')
+	for i, line in enumerate(lines):
+		if line == "!LOC=%s" % working_dir:
+			print(lines[i + 1].strip('!FNAME='), end='')
+
+def cat(working_dir, *args):
+	if not args:
+		print("Missing argument. Usage: cat <filename(s)>", end='')
+		return
+	for target in args:
+		files = open("files.img", 'r+')
+		lines = files.read().strip('\0').split('\n')
+		contents = []
+		for i, line in enumerate(lines):
+			if line == '!LOC=%s' % working_dir \
+			   and lines[i + 1] == '!FNAME=%s' % target:
+					for i in range(i+2, len(lines)):
+						if lines[i] and lines[i][0] == '!': break
+						contents.append(lines[i])
+					break
+		else:
+			print("cat: %s: no such file or directory" % target, end='')
+		print(''.join(contents))
+		files.close()
+
+def rm(working_dir, *args):
+	files = open("files.img", 'r+')
+	to_be_written = []
+	target = args[0]
+	lines = files.read().strip('\0').split('\n')
+	write_or_not = True
+	for i, line in enumerate(lines):
+		if write_or_not:
+			if line == '!FNAME=%s' % target \
+		   and lines[i-1] == '!LOC=%s' % working_dir:
+				write_or_not = False
+				del to_be_written[-1]
+		else:
+			if line and line[0] == '!':
+				write_or_not = True
+		if write_or_not:
+			to_be_written.append(line)
+	files.close()
+	fw = open("files.img", 'w+')
+	fw.write('\n'.join(to_be_written))
+	fw.close()
+
+def calc(working_dir, *args):
+	expr = input()
+	while expr != 'q':
+		result = None
+		try:
+			result = eval(expr)
+		except ZeroDivisionError:
+			print("Don't divide by zero!", end='')
+		except SyntaxError:
+			print("Your expression doesn't seem to be valid.", end='')
+		except:
+			print("This expression doesn't seem to work.", end='')
+		if result:
+			print(result, end='')
+		expr = input()
 
 class Pic(object):
 	def __init__(self, fileName):
@@ -100,13 +161,16 @@ class App:
 			self.txtField.content = self.txtField.content[-self.txtField.h:]
 			self.txtField.draw(screen, self.txtField.content)
 		if self.canvasEnabled:
+			if self.appID == snake.appID:
+				snakeGame.draw(self.canvas)
+				snakeGame.move()
 			framework.screen.blit(self.canvas, (0, 60))
 	def addButton(self, b):
 		self.btnList.append(b)
 	def addTooltip(self, txt, font, x, y, c, rect):
 		tt = Tooltip(txt, font, x, y, c, rect)
 		self.txtList.append(tt)
-	def enableTxtField(self, x, y, w, h, placeholder = "/# "):
+	def enableTxtField(self, x, y, w, h, placeholder = "/$ "):
 		if self.canvasEnabled:
 			print("Only one of either the text field or the canvas can be enabled in an App.")
 			return
@@ -139,7 +203,7 @@ class App:
 			self.txtField.keyDown(key)
 		if self.canvasEnabled:
 			if self.appID == snake.appID:
-				pass
+				snakeGame.keyDown(key)
 
 class Button:
 	def __init__(self, picFile, x, y, appID, **txt):
@@ -216,15 +280,15 @@ class TxtField:
 			img = self.raster.render(line, True, c)
 			screen.blit(img, (0, y))
 			y += 30
-
 	def exec_cmd(self, on_scr):
 		cmd = on_scr.split()
-		main = cmd.pop()
+		try: main = cmd.pop(0)
+		except: pass
 		output = io.StringIO()
 		with redirect_stdout(output):
-			exec("%s('%s', %s)" % (main, self.pwd, str(cmd)))
+			try: exec("%s('%s', %s)" % (main, self.pwd, str(cmd)))
+			except: print("%s: command not found" % on_scr, end='')
 		self.txtBuffer.append(output.getvalue())
-
 	def keyUp(self, key):
 		if key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
 			self.shift = False
@@ -233,14 +297,12 @@ class TxtField:
 	def keyDown(self, key):
 		if key == pygame.K_BACKSPACE:
 			if (self.txtBuffer and self.txtBuffer[-1] != '\n') or not self.txtBuffer:
-				try:
-					self.txtBuffer.pop()
-				except:
-					pass
+				try: self.txtBuffer.pop()
+				except: pass
 		elif key == pygame.K_RETURN:
 			cmd = ''
 			i = -1
-			while len(self.txtBuffer) > -i-1 and self.txtBuffer[i] != '\n':
+			while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\n':
 				cmd = self.txtBuffer[i] + cmd
 				i -= 1
 			self.txtBuffer.append('\r')
@@ -306,16 +368,82 @@ class Dialog:
 	def mouseDown(self, pos, button):
 		self.closeBtn.mouseDown(pos, button)
 
+class SnakeGame:
+	def __init__(self):
+		self.tileWidth = 32
+		self.x0, self.y0 = 192, 144
+		self.snakeLen = 1
+		self.snakePos = []
+		self.direction = 0
+		self.speedX = (1, 0, -1, 0)
+		self.speedY = (0, 1, 0, -1)
+		self.sx, self.sy = 0, 0
+		self.ix, self.iy = random.randint(0, 19), random.randint(0, 14)
+		self.lost = 0
+		self.bigFont = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 100)
+		self.smallFont = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 60)
+		self.bg = pygame.Surface((640, 480))
+		self.bg.fill((255, 255, 255))
+		self.gameOver = self.bigFont.render("Game Over!", True, (255, 255, 255))
+		self.restart = self.smallFont.render("PRESS R TO RESTART", True, (255, 255, 255))
+	def draw(self, canvas):
+		canvas.fill((40, 40, 40))
+		if self.lost == 1:
+			canvas.blit(self.gameOver, (250, 200))
+			canvas.blit(self.restart, (230, 300))
+			return
+		canvas.blit(self.bg, (self.x0, self.y0))
+		for pos in self.snakePos[-self.snakeLen:]:
+			pygame.draw.rect(canvas, (60, 110, 5), (self.x0 + pos[0] * self.tileWidth, self.y0 + pos[1] * self.tileWidth, self.tileWidth, self.tileWidth))
+		pygame.draw.rect(canvas, (190, 30, 50), (self.x0 + self.ix * self.tileWidth, self.y0 + self.iy * self.tileWidth, self.tileWidth, self.tileWidth))
+	def move(self):
+		if self.lost == 1:
+			return
+		self.sx = (self.sx + self.speedX[self.direction]) % 20
+		self.sy = (self.sy + self.speedY[self.direction]) % 15
+		if (self.sx, self.sy) in self.snakePos[-self.snakeLen:]:
+			self.lost = 1
+		self.snakePos.append((self.sx, self.sy))
+		if self.sx == self.ix and self.sy == self.iy:
+			self.ix, self.iy = random.randint(0, 19), random.randint(0, 14)
+			self.snakeLen += 1
+	def keyDown(self, key):
+		if key == pygame.K_UP:
+			self.direction = 3
+		if key == pygame.K_DOWN:
+			self.direction = 1
+		if key == pygame.K_LEFT:
+			self.direction = 2
+		if key == pygame.K_RIGHT:
+			self.direction = 0
+		if key == pygame.K_r and self.lost == 1:
+			self.snakeLen = 1
+			self.snakePos = []
+			self.sx, self.sy = 0, 0
+			self.ix, self.iy = random.randint(0, 19), random.randint(0, 14)
+			self.lost = 0
+
+class Terminal(TxtField):
+	def __init__(self, x, y, w, h, pwd = '/'):
+		self.pwd = pwd
+		super().__init__(x, y, w, h)
+
 framework = Kernel()
 bg = App("res/clouds.jpg")
 term = App("res/blank.jpg")
+termCtrl = Terminal(0, 0, 80, 20)
 snake = App("res/blank.jpg")
+snake.enableCanvas()
+snakeGame = SnakeGame()
 framework.appID = bg.appID
 framework.addApp(bg)
 framework.addApp(term)
+framework.addApp(snake)
 framework.addDialog(Dialog("Hey there!", "Welcome to Winnux 58!"))
-bg.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, term.appID, font=framework.raster, content="TERMINAL"))
+bg.addButton(Button("res/button/txt_btn.bmp", 20, 20, term.appID, font=framework.raster, content="TERMINAL"))
+bg.addButton(Button("res/button/txt_btn.bmp", 20, 60, snake.appID, font=framework.raster, content="SNAKE"))
 term.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
+snake.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
 term.enableTxtField(0, 0, 80, 20)
 
 while True:
