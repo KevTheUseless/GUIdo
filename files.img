@@ -1,9 +1,6 @@
-!FNAME=a
-!LOC=/sys/
-qowmskmx
-.
-q
+LICENSEDUNDERAGPL&KTUGPL
 
+!LOC=/sys/
 !FNAME=kernel.py
 # kernel.py
 # Core of our OS

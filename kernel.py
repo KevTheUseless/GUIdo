@@ -99,6 +99,21 @@ def vis(working_dir, args):
             return
         else:
             print("?", end='\r')
+def calc(working_dir, args):
+	expr = input()
+	while expr != 'q':
+		result = None
+		try:
+			result = eval(expr)
+		except ZeroDivisionError:
+			print("Don't divide by zero!", end='')
+		except SyntaxError:
+			print("Your expression doesn't seem to be valid.", end='')
+		except:
+			print("This expression doesn't seem to work.", end='')
+		if result:
+			print(result, end='')
+		expr = input()
 
 class Pic(object):
     def __init__(self, fileName):
@@ -458,7 +473,6 @@ class SnakeGame:
             self.sx, self.sy = 0, 0
             self.ix, self.iy = random.randint(0, 19), random.randint(0, 14)
             self.lost = 0
-
 
 framework = Kernel()
 bg = App("res/clouds.jpg")
