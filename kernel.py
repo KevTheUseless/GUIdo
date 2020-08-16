@@ -8,7 +8,7 @@ from enum import Enum
 
 width, height = 1024, 768
 
-def pwd(working_dir, *args):
+def pwd(working_dir, args):
 	print(working_dir, end='')
 
 def ls(working_dir, *args):
@@ -18,7 +18,7 @@ def ls(working_dir, *args):
 		if line == "!LOC=%s" % working_dir:
 			print(lines[i + 1].strip('!FNAME='), end='')
 
-def cat(working_dir, *args):
+def cat(working_dir, args):
 	if not args:
 		print("Missing argument. Usage: cat <filename(s)>", end='')
 		return
@@ -29,16 +29,16 @@ def cat(working_dir, *args):
 		for i, line in enumerate(lines):
 			if line == '!LOC=%s' % working_dir \
 			   and lines[i + 1] == '!FNAME=%s' % target:
-					for i in range(i+2, len(lines)):
+					for i in range(i + 2, len(lines)):
 						if lines[i] and lines[i][0] == '!': break
 						contents.append(lines[i])
 					break
 		else:
 			print("cat: %s: no such file or directory" % target, end='')
-		print(''.join(contents))
+		print('\n'.join(contents))
 		files.close()
 
-def rm(working_dir, *args):
+def rm(working_dir, args):
 	files = open("files.img", 'r+')
 	to_be_written = []
 	target = args[0]
@@ -47,7 +47,7 @@ def rm(working_dir, *args):
 	for i, line in enumerate(lines):
 		if write_or_not:
 			if line == '!FNAME=%s' % target \
-		   and lines[i-1] == '!LOC=%s' % working_dir:
+		   and lines[i - 1] == '!LOC=%s' % working_dir:
 				write_or_not = False
 				del to_be_written[-1]
 		else:
@@ -60,7 +60,7 @@ def rm(working_dir, *args):
 	fw.write('\n'.join(to_be_written))
 	fw.close()
 
-def calc(working_dir, *args):
+def calc(working_dir, args):
 	expr = input()
 	while expr != 'q':
 		result = None
@@ -280,15 +280,70 @@ class TxtField:
 			img = self.raster.render(line, True, c)
 			screen.blit(img, (0, y))
 			y += 30
+	def vis(working_dir, args):
+		if not args:
+			print("Missing argument. Usage: vis <filename>", end='\r')
+		while True:
+			cmd = input()
+			print(cmd, end='\r')
+			if cmd == "i":
+				rm(working_dir, args[0])
+				files = open("files.img", 'r+')
+				files.write("!FNAME=" + args[0] + "\n")
+				files.write("!LOC=" + working_dir + "\n")
+				while True:
+					line = input()
+					print(line, end = '\r')
+					line += '\n'
+					if line == ".":
+						break
+					files.write(line)
+				files.close()
+			elif cmd == "a":
+				files = open("files.img", 'r+')
+				lines = files.read().strip('\0').split('\n')
+				contents = []
+				for i, line in enumerate(lines):
+					if line == '!LOC=%s' % working_dir \
+					   and lines[i + 1] == '!FNAME=%s' % args[0]:
+							for i in range(i + 2, len(lines)):
+								if lines[i] and lines[i][0] == '!': break
+								contents.append(lines[i])
+							break
+				else:
+					files = open("files.img", 'r+')
+					files.write("!FNAME=" + args[0] + "\n")
+					files.write("!LOC=" + working_dir + "\n")
+					for line in content:
+						files.write(line + "\n")
+					while True:
+						line = input()
+						print(line, end = '\r')
+						line += "\n"
+						if line == ".":
+							break
+						files.write(line)
+					files.close()
+					break
+				files.close()
+			elif cmd == "q":
+				return
+			else:
+				print("?", end='\r')
 	def exec_cmd(self, on_scr):
 		cmd = on_scr.split()
 		try: main = cmd.pop(0)
-		except: pass
+		except: main = None
 		output = io.StringIO()
 		with redirect_stdout(output):
-			try: exec("%s('%s', %s)" % (main, self.pwd, str(cmd)))
-			except: print("%s: command not found" % on_scr, end='')
-		self.txtBuffer.append(output.getvalue())
+			if main:
+				if main == "cd": self.cd(cmd[0])
+				elif main == "vis": self.vis(cmd[0])
+				else: exec("%s('%s', %s)" % (main, self.pwd, str(cmd)))
+			else: print("%s: command not found" % on_scr, end='')
+		self.txtBuffer.append('\r')
+		self.txtBuffer += list(output.getvalue().rstrip('\n'))
+		self.placeholder.append("%s$" % self.pwd)
 	def keyUp(self, key):
 		if key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
 			self.shift = False
@@ -423,15 +478,9 @@ class SnakeGame:
 			self.ix, self.iy = random.randint(0, 19), random.randint(0, 14)
 			self.lost = 0
 
-class Terminal(TxtField):
-	def __init__(self, x, y, w, h, pwd = '/'):
-		self.pwd = pwd
-		super().__init__(x, y, w, h)
-
 framework = Kernel()
 bg = App("res/clouds.jpg")
 term = App("res/blank.jpg")
-termCtrl = Terminal(0, 0, 80, 20)
 snake = App("res/blank.jpg")
 snake.enableCanvas()
 snakeGame = SnakeGame()
