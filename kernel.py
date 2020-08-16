@@ -294,37 +294,10 @@ class TxtField:
 				while True:
 					line = input()
 					print(line, end = '\r')
-					line += '\n'
 					if line == ".":
 						break
+					line += '\n'
 					files.write(line)
-				files.close()
-			elif cmd == "a":
-				files = open("files.img", 'r+')
-				lines = files.read().strip('\0').split('\n')
-				contents = []
-				for i, line in enumerate(lines):
-					if line == '!LOC=%s' % working_dir \
-					   and lines[i + 1] == '!FNAME=%s' % args[0]:
-							for i in range(i + 2, len(lines)):
-								if lines[i] and lines[i][0] == '!': break
-								contents.append(lines[i])
-							break
-				else:
-					files = open("files.img", 'r+')
-					files.write("!FNAME=" + args[0] + "\n")
-					files.write("!LOC=" + working_dir + "\n")
-					for line in content:
-						files.write(line + "\n")
-					while True:
-						line = input()
-						print(line, end = '\r')
-						line += "\n"
-						if line == ".":
-							break
-						files.write(line)
-					files.close()
-					break
 				files.close()
 			elif cmd == "q":
 				return
@@ -338,7 +311,7 @@ class TxtField:
 		with redirect_stdout(output):
 			if main:
 				if main == "cd": self.cd(cmd[0])
-				elif main == "vis": self.vis(cmd[0])
+				elif main == "vis": self.vis(self.pwd, cmd[0])
 				else: exec("%s('%s', %s)" % (main, self.pwd, str(cmd)))
 			else: print("%s: command not found" % on_scr, end='')
 		self.txtBuffer.append('\r')
