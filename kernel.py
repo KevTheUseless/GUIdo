@@ -9,7 +9,7 @@ from enum import Enum
 width, height = 1024, 768
 
 def pwd(working_dir, args):
-	print(working_dir, end='')
+	print(working_dir, end='\r')
 
 def ls(working_dir, args, flg=True):
 	files = open("files.img", 'r+')
@@ -20,12 +20,11 @@ def ls(working_dir, args, flg=True):
 		if line == "!LOC=%s" % working_dir:
 			if flg: print(lines[i + 1].strip('!FNAME='), end=' ')
 			result.append(lines[i + 1].strip('!FNAME='))
-
 	return result
 
 def cat(working_dir, args):
 	if not args:
-		print("Missing argument.\rUsage: cat <filename(s)>")
+		print("Missing argument.\rUsage: cat <filename(s)>", end='\r')
 		return
 	for target in args:
 		files = open("files.img", 'r+')
@@ -37,10 +36,10 @@ def cat(working_dir, args):
 					for i in range(i+2, len(lines)):
 						if lines[i] and lines[i][0] == '!': break
 						contents.append(lines[i])
-						print(contents)
+						print(contents, end = '\r')
 					break
 		else:
-			print("cat: %s: no such file" % target)
+			print("cat: %s: no such file" % target, end = '\r')
 		print('\r'.join(contents))
 		files.close()
 
@@ -335,17 +334,19 @@ class TxtField:
 					if event.key == pygame.K_i:
 						cmd = "i"
 						print("--INSERT--", end='\r')
-						framework.launch()
+						pygame.display.update()
+						framework.clock.tick(50)
 						break
 					else:
 						print("?", end='\r')
-						framework.launch()
+						pygame.display.update()
+						framework.clock.tick(50)
 				elif event.type == pygame.QUIT:
 					pygame.quit()
 					sys.exit()
 			if cmd == "i":
 				rm(self.pwd, args[0])
-				files = open("files.img", 'r+')
+				files = open("files.img", 'a+')
 				files.write("!FNAME=" + args[0] + "\n")
 				files.write("!LOC=" + self.pwd + "\n")
 				while True:
@@ -357,8 +358,9 @@ class TxtField:
 								except: pass
 							elif event.key == pygame.K_RETURN:
 								print(line, end='\r')
+								line += '\n'
 								pygame.display.update()
-								clock.tick(50)
+								framework.clock.tick(50)
 								break
 							elif event.key == pygame.K_TAB:
 								for i in range(4):
@@ -376,8 +378,9 @@ class TxtField:
 									else:
 										line.append(chr(event.key))
 							print(line, end='\r')
+							print(line, file=sys.stderr)
 							pygame.display.update()
-							clock.tick(50)
+							framework.clock.tick(50)
 						elif event.type == pygame.KEYUP:
 							if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
 								self.shift = False
@@ -388,10 +391,9 @@ class TxtField:
 							sys.exit()
 						print(line, end = '\r')
 						pygame.display.update()
-						clock.tick(50)
-					if line == ".":
+						framework.clock.tick(50)
+					if line == ".\n":
 						break
-					line += '\n'
 					files.write(''.join(line))
 				files.close()
 			elif cmd == "q":
@@ -567,7 +569,7 @@ bg.addButton(Button("res/button/txt_btn.bmp", 20, 20, term.appID, font=framework
 bg.addButton(Button("res/button/txt_btn.bmp", 20, 60, snake.appID, font=framework.raster, content="SNAKE"))
 term.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
 snake.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
-term.enableTxtField(20, 20, 100, 40)
+term.enableTxtField(50, 60, 100, 40)
 
 while True:
 	for event in pygame.event.get():
