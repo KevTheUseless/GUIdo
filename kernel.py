@@ -37,9 +37,10 @@ def cat(working_dir, args):
 					for i in range(i+2, len(lines)):
 						if lines[i] and lines[i][0] == '!': break
 						contents.append(lines[i])
+						print(contents)
 					break
 		else:
-			print("cat: %s: no such file or directory" % target)
+			print("cat: %s: no such file" % target)
 		print('\r'.join(contents))
 		files.close()
 
@@ -244,6 +245,7 @@ class TxtField:
 		self.txtBuffer = []
 		self.content = []
 		self.lastKey = ''
+		# ↓ MAGIC ↓ #
 		self.caps = { '`': '~', '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', '-': '_', '=': '+', '[': '{', ']': '}', '\\': '|', ';': ':', '\'': '"', ',': '<', '.': '>', '/': '?', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H', 'i': 'I', 'j': 'J', 'k': 'K', 'l': 'L', 'm': 'M', 'n': 'N', 'o': 'O', 'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W', 'x': 'X', 'y': 'Y', 'z': 'Z' }
 		self.shift, self.capsLock = False, False
 		self.raster = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 16)
@@ -323,21 +325,74 @@ class TxtField:
 	def vis(self, args):
 		if not args:
 			print("Missing argument. Usage: vis <filename>", end='\r')
+		if '/' in args[0]:
+			print("No.", end='\r')
+			return
 		while True:
-			cmd = input()
-			print(cmd, end='\r')
+			cmd = ""
+			for event in pygame.event.get():
+				if event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_i:
+						cmd = "i"
+						print("--INSERT--", end='\r')
+						framework.launch()
+						break
+					else:
+						print("?", end='\r')
+						framework.launch()
+				elif event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
 			if cmd == "i":
 				rm(self.pwd, args[0])
 				files = open("files.img", 'r+')
 				files.write("!FNAME=" + args[0] + "\n")
-				files.write("!LOC=" + working_dir + "\n")
+				files.write("!LOC=" + self.pwd + "\n")
 				while True:
-					line = input()
-					print(line, end = '\r')
+					line = []
+					for event in pygame.event.get():
+						if event.type == pygame.KEYDOWN:
+							if event.key == pygame.K_BACKSPACE:
+								try: line.pop()
+								except: pass
+							elif event.key == pygame.K_RETURN:
+								print(line, end='\r')
+								pygame.display.update()
+								clock.tick(50)
+								break
+							elif event.key == pygame.K_TAB:
+								for i in range(4):
+									line.append(' ')
+							elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+								self.shift = True
+							elif event.key == pygame.K_CAPSLOCK:
+								self.capsLock = 1 - self.capsLock
+							else:
+								if 32 <= event.key <= 126:
+									if (event.key == 39 or 44 <= event.key <= 57 or event.key == 59 or event.key == 61 or event.key == 96 or 91 <= event.key <= 93) and self.shift:
+										line.append(self.caps[chr(event.key)])
+									elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
+										line.append(self.caps[chr(event.key)])
+									else:
+										line.append(chr(event.key))
+							print(line, end='\r')
+							pygame.display.update()
+							clock.tick(50)
+						elif event.type == pygame.KEYUP:
+							if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+								self.shift = False
+							elif event.key == pygame.K_CAPSLOCK:
+								self.capsLock = 1 - self.capsLock
+						elif event.type == pygame.QUIT:
+							pygame.quit()
+							sys.exit()
+						print(line, end = '\r')
+						pygame.display.update()
+						clock.tick(50)
 					if line == ".":
 						break
 					line += '\n'
-					files.write(line)
+					files.write(''.join(line))
 				files.close()
 			elif cmd == "q":
 				return
@@ -348,7 +403,6 @@ class TxtField:
 		try: main = cmd.pop(0)
 		except: main = None
 		output = io.StringIO()
-		sys.stdin = output
 		with redirect_stdout(output):
 			if main:
 				if main == 'cd': self.cd(cmd[0])
@@ -360,7 +414,6 @@ class TxtField:
 			else: pass
 		self.txtBuffer.append('\r')
 		self.txtBuffer += list(output.getvalue().rstrip('\n'))
-		sys.stdin = sys.__stdin__
 		self.placeholder.append('%s# ' % self.pwd)
 	def keyUp(self, key):
 		if key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
@@ -397,10 +450,8 @@ class TxtField:
 					self.lastKey = self.caps[chr(key)]
 				elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
 					self.txtBuffer.append(self.caps[chr(key)])
-					self.lastKey = self.caps[chr(key)]
 				else:
 					self.txtBuffer.append(chr(key))
-					self.lastKey = chr(key)
 
 class Secret:
 	def __init__(self, rect, dialogID):
