@@ -11,16 +11,21 @@ width, height = 1024, 768
 def pwd(working_dir, args):
 	print(working_dir, end='')
 
-def ls(working_dir, args):
+def ls(working_dir, args, flg=True):
 	files = open("files.img", 'r+')
 	lines = files.read().strip('\0').split('\n')
+
+	result = []
 	for i, line in enumerate(lines):
 		if line == "!LOC=%s" % working_dir:
-			print(lines[i + 1].strip('!FNAME='), end='')
+			if flg: print(lines[i + 1].strip('!FNAME='), end=' ')
+			result.append(lines[i + 1].strip('!FNAME='))
+
+	return result
 
 def cat(working_dir, args):
 	if not args:
-		print("Missing argument. Usage: cat <filename(s)>", end='')
+		print("Missing argument.\rUsage: cat <filename(s)>")
 		return
 	for target in args:
 		files = open("files.img", 'r+')
@@ -34,7 +39,7 @@ def cat(working_dir, args):
 						contents.append(lines[i])
 					break
 		else:
-			print("cat: %s: no such file or directory" % target, end='')
+			print("cat: %s: no such file or directory" % target)
 		print('\r'.join(contents))
 		files.close()
 
@@ -245,18 +250,21 @@ class TxtField:
 	def wrap(self, txtBuffer):
 		lines = []
 		ptr = 0
+		prev_i = 0
 		temp = self.placeholder[ptr]
 		for i in range(len(txtBuffer)):
 			if txtBuffer[i] == '\n':
 				lines.append(temp)
 				ptr += 1
 				temp = self.placeholder[ptr]
-			elif txtBuffer[i] == '\r':
+				prev_i = i
+			elif txtBuffer[i] == '\r' or (i != 0 and (i-prev_i) % self.w == 0):
+				temp += txtBuffer[i] if txtBuffer[i] not in ('\n', '\r', ' ', '') else ''
 				lines.append(temp)
 				temp = ''
-			elif (i != 0 and i % self.w == 0):
-				lines.append(temp)
-				temp = ""
+				prev_i = i
+			elif txtBuffer[i] == '\t':
+				temp += '    '
 			else:
 				temp += txtBuffer[i]
 		lines.append(temp)
@@ -267,6 +275,24 @@ class TxtField:
 			screen.blit(img, (self.x, y))
 			y += 16
 	def cd(self, dir_name):
+		def process_dir(dr: str):
+			for d in dr.split('/'):
+				if d:
+					if d[0] == '.':
+						if d == '..':
+							self.pwd = ""
+							try: nTemp.pop()
+							except: pass
+							for i in nTemp:
+								if i:
+									self.pwd += '/' + i
+							self.pwd += '/'
+					elif (d + '/') in ls(self.pwd, [], False):
+						self.pwd += d + '/'
+					else:
+						print("cd: %s: no such directory." % d)
+						return
+
 		temp = self.pwd.split('/')
 		nTemp = []
 		self.pwd = ""
@@ -276,18 +302,9 @@ class TxtField:
 				nTemp.append(i)
 		self.pwd += '/'
 		if dir_name[0] == '/':
-			self.pwd = dir_name
-		elif dir_name[0] != '.':
-			self.pwd += dir_name + '/'
-		elif dir_name[0] == '.':
-			if dir_name == '..':
-				self.pwd = ""
-				try: nTemp.pop()
-				except: pass
-				for i in nTemp:
-					if i:
-						self.pwd += '/' + i
-				self.pwd += '/'
+			self.pwd = '/'
+			dir_name = dir_name[1:]
+		process_dir(dir_name)
 	def calc(self):
 		expr = input()
 		while expr != 'q':
@@ -344,7 +361,7 @@ class TxtField:
 		self.txtBuffer.append('\r')
 		self.txtBuffer += list(output.getvalue().rstrip('\n'))
 		sys.stdin = sys.__stdin__
-		self.placeholder.append('%s$ ' % self.pwd)
+		self.placeholder.append('%s# ' % self.pwd)
 	def keyUp(self, key):
 		if key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
 			self.shift = False

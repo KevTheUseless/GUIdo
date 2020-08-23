@@ -274,3 +274,9 @@ while True:
 		sys.exit(0)
 	else:
 		print("?")
+
+!LOC=/
+!FNAME=sys/
+
+!LOC=/
+!FNAME=bin/
