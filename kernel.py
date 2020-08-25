@@ -1,7 +1,7 @@
 # kernel.py
 # Core of our OS
 
-import pygame, sys, random, time, io
+import pygame, sys, random, time, io, os
 from math import *
 from contextlib import redirect_stdout
 from enum import Enum
@@ -11,14 +11,14 @@ width, height = 1024, 768
 def pwd(working_dir, args):
 	print(working_dir, end='\r')
 
-def ls(working_dir, args, flg=True):
+def ls(working_dir, args, flag=True):
 	files = open("files.img", 'r+')
 	lines = files.read().strip('\0').split('\n')
 
 	result = []
 	for i, line in enumerate(lines):
 		if line == "!LOC=%s" % working_dir:
-			if flg: print(lines[i + 1].strip('!FNAME='), end=' ')
+			if flag: print(lines[i + 1].strip('!FNAME='), end=' ')
 			result.append(lines[i + 1].strip('!FNAME='))
 	return result
 
@@ -54,7 +54,7 @@ def rm(working_dir, args):
 			if line == '!FNAME=%s' % target \
 		   and lines[i-1] == '!LOC=%s' % working_dir:
 				write_or_not = False
-				del to_be_written[-1]
+				to_be_written.pop()
 		else:
 			if line and line[0] == '!':
 				write_or_not = True
@@ -259,7 +259,7 @@ class TxtField:
 				ptr += 1
 				temp = self.placeholder[ptr]
 				prev_i = i
-			elif txtBuffer[i] == '\r' or (i != 0 and (i-prev_i) % self.w == 0):
+			elif txtBuffer[i] == '\r' or (i != 0 and (i - prev_i) % self.w == 0):
 				temp += txtBuffer[i] if txtBuffer[i] not in ('\n', '\r', ' ', '') else ''
 				lines.append(temp)
 				temp = ''
@@ -291,9 +291,8 @@ class TxtField:
 					elif (d + '/') in ls(self.pwd, [], False):
 						self.pwd += d + '/'
 					else:
-						print("cd: %s: no such directory." % d)
+						print("cd: %s: no such directory." % d, end='\r')
 						return
-
 		temp = self.pwd.split('/')
 		nTemp = []
 		self.pwd = ""
@@ -306,100 +305,77 @@ class TxtField:
 			self.pwd = '/'
 			dir_name = dir_name[1:]
 		process_dir(dir_name)
-	def calc(self):
-		expr = input()
-		while expr != 'q':
-			result = None
-			try:
-				result = eval(expr)
-			except ZeroDivisionError:
-				print("Don't divide by zero!", end='')
-			except SyntaxError:
-				print("Your expression doesn't seem to be valid.", end='')
-			except:
-				print("This expression doesn't seem to work.", end='')
-			if result:
-				print(result, end='')
-			expr = input()
 	def vis(self, args):
 		if not args:
-			print("Missing argument. Usage: vis <filename>", end='\r')
-		if '/' in args[0]:
+			print("vis: missing argument.\rUsage: vis <filename>", end='\r')
+		if type(args) == type([]):
+			print("vis: too many arguments.\rUsage: vis <filename>", end='\r')
+		if '/' in args:
 			print("No.", end='\r')
 			return
 		while True:
-			cmd = ""
-			for event in pygame.event.get():
-				if event.type == pygame.KEYDOWN:
-					if event.key == pygame.K_i:
-						cmd = "i"
-						print("--INSERT--", end='\r')
-						pygame.display.update()
-						framework.clock.tick(50)
-						break
-					else:
-						print("?", end='\r')
-						pygame.display.update()
-						framework.clock.tick(50)
-				elif event.type == pygame.QUIT:
-					pygame.quit()
-					sys.exit()
-			if cmd == "i":
-				rm(self.pwd, args[0])
-				files = open("files.img", 'a+')
-				files.write("!FNAME=" + args[0] + "\n")
-				files.write("!LOC=" + self.pwd + "\n")
-				while True:
-					line = []
-					for event in pygame.event.get():
-						if event.type == pygame.KEYDOWN:
-							if event.key == pygame.K_BACKSPACE:
-								try: line.pop()
-								except: pass
-							elif event.key == pygame.K_RETURN:
-								print(line, end='\r')
-								line += '\n'
-								pygame.display.update()
-								framework.clock.tick(50)
-								break
-							elif event.key == pygame.K_TAB:
-								for i in range(4):
-									line.append(' ')
-							elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
-								self.shift = True
-							elif event.key == pygame.K_CAPSLOCK:
-								self.capsLock = 1 - self.capsLock
-							else:
-								if 32 <= event.key <= 126:
-									if (event.key == 39 or 44 <= event.key <= 57 or event.key == 59 or event.key == 61 or event.key == 96 or 91 <= event.key <= 93) and self.shift:
-										line.append(self.caps[chr(event.key)])
-									elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
-										line.append(self.caps[chr(event.key)])
-									else:
-										line.append(chr(event.key))
-							print(line, end='\r')
-							print(line, file=sys.stderr)
-							pygame.display.update()
-							framework.clock.tick(50)
-						elif event.type == pygame.KEYUP:
-							if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
-								self.shift = False
-							elif event.key == pygame.K_CAPSLOCK:
-								self.capsLock = 1 - self.capsLock
-						elif event.type == pygame.QUIT:
-							pygame.quit()
-							sys.exit()
-						print(line, end = '\r')
-						pygame.display.update()
-						framework.clock.tick(50)
-					if line == ".\n":
-						break
-					files.write(''.join(line))
-				files.close()
-			elif cmd == "q":
-				return
-			else:
-				print("?", end='\r')
+			rm(self.pwd, [args])
+			files = open("files.img", 'a+')
+			files.write("\n\n!LOC=" + self.pwd + "\n")
+			files.write("!FNAME=" + args + "\n")
+			self.txtBuffer.append('\r')
+			maxPopIndex = len(self.txtBuffer)
+			charList = []
+			justPopped = False
+			while True:
+				for event in pygame.event.get():
+					if event.type == pygame.KEYDOWN:
+						if event.key == pygame.K_ESCAPE:
+							return
+						elif event.key == pygame.K_BACKSPACE:
+							try:
+								if self.txtBuffer[maxPopIndex:] != []:
+									self.txtBuffer.pop()
+									charList.pop()
+									justPopped = True
+							except: justPopped = False
+						elif event.key == pygame.K_RETURN:
+							self.txtBuffer.append('\r')
+							files.write(''.join(charList) + '\n')
+							charList = []
+							justPopped = False
+							framework.launch()
+							break
+						elif event.key == pygame.K_TAB:
+							justPopped = False
+							for i in range(4):
+								charList.append(' ')
+						elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+							justPopped = False
+							self.shift = True
+						elif event.key == pygame.K_CAPSLOCK:
+							justPopped = False
+							self.capsLock = 1 - self.capsLock
+						else:
+							if 32 <= event.key <= 126:
+								justPopped = False
+								if (event.key == 39 or 44 <= event.key <= 57 or event.key == 59 or event.key == 61 or event.key == 96 or 91 <= event.key <= 93) and self.shift:
+									charList.append(self.caps[chr(event.key)])
+								elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
+									charList.append(self.caps[chr(event.key)])
+								else:
+									charList.append(chr(event.key))
+						try:
+							if not justPopped:
+								self.txtBuffer.append(charList[-1])
+						except: pass
+						print(charList, file=sys.stderr)
+						framework.launch()
+					elif event.type == pygame.KEYUP:
+						if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+							self.shift = False
+						elif event.key == pygame.K_CAPSLOCK:
+							self.capsLock = 1 - self.capsLock
+					elif event.type == pygame.QUIT:
+						pygame.quit()
+						sys.exit()
+					framework.launch()
+			files.close()
 	def exec_cmd(self, on_scr):
 		cmd = on_scr.split()
 		try: main = cmd.pop(0)
@@ -408,7 +384,6 @@ class TxtField:
 		with redirect_stdout(output):
 			if main:
 				if main == 'cd': self.cd(cmd[0])
-				elif main == 'calc': self.calc()
 				elif main == 'vis': self.vis(cmd[0])
 				else: 
 					try: exec("%s('%s', %s)" % (main, self.pwd, str(cmd)))
