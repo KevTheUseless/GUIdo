@@ -2,7 +2,9 @@
 
 ## Overview
 
-Pygame GUI library, named after the creator of Python, Guido van Rossum, believing that this library will be the first to implement a GUI completely compatible with pygame. Included is a "mini-OS" to show off all the elements.
+Pygame GUI library, named after the creator of Python, Guido van Rossum, believing that this library will be the first to implement a GUI completely compatible with pygame. Included is a "mini-OS" to show off all the elements. That "mini-OS" is called *Winnux 58* (**Win**dows 9**5** + **Win**dows 9**8** + Li**nux**).
+
+~~i kinda hate this name now~~
 
 ## Features
 
