@@ -16,7 +16,7 @@ def pwd(working_dir, args):
 	print(working_dir, end='\r')
 
 def ls(working_dir, args, flag=True):
-	files = open("files.img", 'r+')
+	files = open("files.img", 'r+', encoding="ISO-8859-1")
 	lines = files.read().strip('\0').split('\n')
 
 	result = []
@@ -31,7 +31,7 @@ def cat(working_dir, args):
 		print("Missing argument.\rUsage: cat <filename(s)>", end='\r')
 		return
 	for target in args:
-		files = open("files.img", 'r+')
+		files = open("files.img", 'r+', encoding="ISO-8859-1")
 		lines = files.read().strip('\0').split('\n')
 		contents = []
 		for i, line in enumerate(lines):
@@ -40,7 +40,6 @@ def cat(working_dir, args):
 					for i in range(i+2, len(lines)):
 						if lines[i] and lines[i][0] == '!': break
 						contents.append(lines[i])
-						print(contents, end = '\r')
 					break
 		else:
 			print("cat: %s: no such file" % target, end = '\r')
@@ -48,7 +47,7 @@ def cat(working_dir, args):
 		files.close()
 
 def rm(working_dir, args):
-	files = open("files.img", 'r+')
+	files = open("files.img", 'r+', encoding="ISO-8859-1")
 	to_be_written = []
 	target = args[0]
 	lines = files.read().strip('\0').split('\n')
@@ -65,7 +64,7 @@ def rm(working_dir, args):
 		if write_or_not:
 			to_be_written.append(line)
 	files.close()
-	fw = open("files.img", 'w+')
+	fw = open("files.img", 'w+', encoding="ISO-8859-1")
 	fw.write('\n'.join(to_be_written))
 	fw.close()
 
@@ -319,7 +318,7 @@ class TxtField:
 			return
 		while True:
 			rm(self.pwd, [args])
-			files = open("files.img", 'a+')
+			files = open("files.img", 'a+', encoding="ISO-8859-1")
 			files.write("\n\n!LOC=" + self.pwd + "\n")
 			files.write("!FNAME=" + args + "\n")
 			self.txtBuffer.append('\r')
@@ -566,3 +565,13 @@ while True:
 		elif event.type == pygame.MOUSEMOTION:
 			framework.mouseMotion(event.pos)
 	framework.launch()
+
+!LOC=/home/
+!FNAME=test.txt
+If you're seeing this, then the `cat` command is working!
+
+!LOC=/
+!FNAME=sys/
+
+!LOC=/
+!FNAME=home/

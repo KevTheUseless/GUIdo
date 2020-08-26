@@ -566,3 +566,6 @@ while True:
 		elif event.type == pygame.MOUSEMOTION:
 			framework.mouseMotion(event.pos)
 	framework.launch()
+
+!LOC=/
+!FNAME=sys/
