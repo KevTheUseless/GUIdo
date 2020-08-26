@@ -1,0 +1,14 @@
+## What do I need?
+You will need:
+- A working Python interpreter, version 3 and up
+- The [pygame module](pygame.org) installed
+
+## How do I run the program?
+Run `stub.py` either by double-clicking on it (in Windows) or using the command line.
+
+## FAQ for `vis`
+### How do I use `vis`?
+When you open it up through the virtual terminal, you will be put in *input mode*, which means whatever you type will be written into the file. `vis` is a *line-based* editor, meaning you can only edit the line you're on.
+
+### Where do the files go?
+Everything you created in Winnux 58 will go into the `files.img` *virtual disk*. You can view them using the `cat` command in the virtual terminal.
