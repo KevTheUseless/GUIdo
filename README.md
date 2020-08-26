@@ -6,7 +6,7 @@ Pygame GUI library, named after the creator of Python, Guido van Rossum, believi
 
 ## Features
 
--   A working command line, with these *nix-style commands:
+-   A working command line, with these *nix-style commands*:
     -   `pwd`: print working directory
     -   `ls`: list file and directories
     -   `rm`: remove file(s)
@@ -16,3 +16,13 @@ Pygame GUI library, named after the creator of Python, Guido van Rossum, believi
 -   A virtual disk to put programs in
 
 Please check our [wiki](https://github.com/The-UltimateGamer/GUIdo/wiki) for more details.
+
+## NEVER TRY TO MOUNT `files.img`
+
+## Directory structure:
+/home/
+- test.txt
+(Note: this is created for the testing of the `cat` command.)
+/sys/
+- kernel.py
+(This is where our OS boots.)
