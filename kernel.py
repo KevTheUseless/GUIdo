@@ -1,7 +1,3 @@
-LICENSEDUNDERAGPL&KTUGPL
-
-!LOC=/sys/
-!FNAME=kernel.py
 # kernel.py
 # Core of our OS
 
@@ -22,7 +18,7 @@ def ls(working_dir, args, flag=True):
 	result = []
 	for i, line in enumerate(lines):
 		if line == "!LOC=%s" % working_dir:
-			if flag: print(lines[i + 1].strip('!FNAME='), end=' ')
+			if flag: print(lines[i + 1].strip('!FNAME='), end='\r')
 			result.append(lines[i + 1].strip('!FNAME='))
 	return result
 
@@ -246,32 +242,39 @@ class TxtField:
 		self.placeholder = ['%s# ' % self.pwd]
 		self.txtBuffer = []
 		self.content = []
-		self.lastKey = ''
-		# ¡ý MAGIC ¡ý #
+		# MAGIC #
 		self.caps = { '`': '~', '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', '-': '_', '=': '+', '[': '{', ']': '}', '\\': '|', ';': ':', '\'': '"', ',': '<', '.': '>', '/': '?', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H', 'i': 'I', 'j': 'J', 'k': 'K', 'l': 'L', 'm': 'M', 'n': 'N', 'o': 'O', 'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W', 'x': 'X', 'y': 'Y', 'z': 'Z' }
 		self.shift, self.capsLock = False, False
+		self.currentLine, self.loc, self.maxIndex = 0, 0, 0
+		self.cLineStr = ""
 		self.raster = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 16)
 	def wrap(self, txtBuffer):
 		lines = []
 		ptr = 0
 		prev_i = 0
-		temp = self.placeholder[ptr]
+		ph = self.placeholder[ptr]
+		if self.loc > self.maxIndex:
+			self.loc = self.maxIndex
+		if self.loc < 0: self.loc = 0
+		if self.maxIndex < 0: self.loc = 0
 		for i in range(len(txtBuffer)):
 			if txtBuffer[i] == '\n':
-				lines.append(temp)
+				self.currentLine = i + 1
+				lines.append(ph)
 				ptr += 1
-				temp = self.placeholder[ptr]
+				ph = self.placeholder[ptr]
 				prev_i = i
 			elif txtBuffer[i] == '\r' or (i != 0 and (i - prev_i) % self.w == 0):
-				temp += txtBuffer[i] if txtBuffer[i] not in ('\n', '\r', ' ', '') else ''
-				lines.append(temp)
-				temp = ''
+				ph += txtBuffer[i] if txtBuffer[i] not in ('\n', '\r', ' ', '') else ''
+				self.currentLine = i + 1
+				lines.append(ph)
+				ph = ''
 				prev_i = i
 			elif txtBuffer[i] == '\t':
-				temp += '    '
+				ph += '    '
 			else:
-				temp += txtBuffer[i]
-		lines.append(temp)
+				ph += txtBuffer[i]
+		lines.append(ph)
 		return lines
 	def draw(self, screen, lines, c = (255, 255, 255), y = 0):
 		for line in lines:
@@ -322,52 +325,14 @@ class TxtField:
 			files.write("\n\n!LOC=" + self.pwd + "\n")
 			files.write("!FNAME=" + args + "\n")
 			self.txtBuffer.append('\r')
-			maxPopIndex = len(self.txtBuffer)
-			charList = []
-			justPopped = False
+			self.txtBuffer.append('\r')
 			while True:
 				for event in pygame.event.get():
 					if event.type == pygame.KEYDOWN:
-						if event.key == pygame.K_ESCAPE:
-							return
-						elif event.key == pygame.K_BACKSPACE:
-							try:
-								if self.txtBuffer[maxPopIndex:] != []:
-									self.txtBuffer.pop()
-									charList.pop()
-									justPopped = True
-							except: justPopped = False
-						elif event.key == pygame.K_RETURN:
-							self.txtBuffer.append('\r')
-							files.write(''.join(charList) + '\n')
-							charList = []
-							justPopped = False
-							framework.launch()
-							break
-						elif event.key == pygame.K_TAB:
-							justPopped = False
-							for i in range(4):
-								charList.append(' ')
-						elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
-							justPopped = False
-							self.shift = True
-						elif event.key == pygame.K_CAPSLOCK:
-							justPopped = False
-							self.capsLock = 1 - self.capsLock
-						else:
-							if 32 <= event.key <= 126:
-								justPopped = False
-								if (event.key == 39 or 44 <= event.key <= 57 or event.key == 59 or event.key == 61 or event.key == 96 or 91 <= event.key <= 93) and self.shift:
-									charList.append(self.caps[chr(event.key)])
-								elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
-									charList.append(self.caps[chr(event.key)])
-								else:
-									charList.append(chr(event.key))
-						try:
-							if not justPopped:
-								self.txtBuffer.append(charList[-1])
-						except: pass
-						print(charList, file=sys.stderr)
+						self.txtBuffer = []
+						self.content = []
+						self.keyDown(event.key, True)
+						files.write(self.cLineStr + '\n')
 						framework.launch()
 					elif event.type == pygame.KEYUP:
 						if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
@@ -400,38 +365,69 @@ class TxtField:
 			self.shift = False
 		elif key == pygame.K_CAPSLOCK:
 			self.capsLock = 1 - self.capsLock
-	def keyDown(self, key):
+	def keyDown(self, key, isVis = False):
 		if key == pygame.K_BACKSPACE:
 			if (self.txtBuffer and self.txtBuffer[-1] != '\n') or not self.txtBuffer:
 				try:
-					self.txtBuffer.pop()
-					self.lastKey = self.txtBuffer[-1]
+					if self.loc - 1 != -1:
+						self.txtBuffer.pop(self.loc - 1)
+						self.maxIndex -= 1
+						self.loc -= 1
 				except: pass
+		elif key == pygame.K_DELETE:
+			try:
+				if self.loc > self.maxIndex:
+					self.loc = self.maxIndex
+				self.txtBuffer.pop(self.currentLine + self.loc)
+				self.maxIndex -= 1
+			except: pass
 		elif key == pygame.K_RETURN:
 			cmd = ''
+			self.loc = 0
+			self.maxIndex = 0
 			i = -1
-			while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\n':
-				cmd = self.txtBuffer[i] + cmd
-				i -= 1
-			self.lastKey = '\n'
-			self.exec_cmd(cmd)
-			self.txtBuffer.append('\n')
+			if isVis:
+				while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\r':
+					cmd = self.txtBuffer[i] + cmd
+					i -= 1
+			else:
+				while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\n':
+					cmd = self.txtBuffer[i] + cmd
+					i -= 1
+			if isVis:
+				self.cLineStr = cmd
+				self.txtBuffer.append('\r')
+				return
+			else:
+				self.exec_cmd(cmd)
+				self.txtBuffer.append('\n')
+			framework.launch()
 		elif key == pygame.K_TAB:
 			for i in range(4):
 				self.txtBuffer.append(' ')
+				self.loc += 1
 		elif key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
 			self.shift = True
 		elif key == pygame.K_CAPSLOCK:
 			self.capsLock = 1 - self.capsLock
+		elif key == pygame.K_LEFT:
+			if self.loc != 0:
+				self.loc -= 1
+		elif key == pygame.K_RIGHT:
+			if self.loc + 1 <= self.maxIndex:
+				self.loc += 1
 		else:
 			if 32 <= key <= 126:
 				if (key == 39 or 44 <= key <= 57 or key == 59 or key == 61 or key == 96 or 91 <= key <= 93) and self.shift:
-					self.txtBuffer.append(self.caps[chr(key)])
-					self.lastKey = self.caps[chr(key)]
+					self.txtBuffer.insert(self.loc, self.caps[chr(key)])
 				elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
-					self.txtBuffer.append(self.caps[chr(key)])
+					self.txtBuffer.insert(self.loc, self.caps[chr(key)])
 				else:
-					self.txtBuffer.append(chr(key))
+					self.txtBuffer.insert(self.loc, chr(key))
+			self.loc += 1
+			self.maxIndex += 1
+		framework.launch()
+		print(self.txtBuffer, self.loc, self.maxIndex)
 
 class Secret:
 	def __init__(self, rect, dialogID):
@@ -565,22 +561,3 @@ while True:
 		elif event.type == pygame.MOUSEMOTION:
 			framework.mouseMotion(event.pos)
 	framework.launch()
-
-!LOC=/home/
-!FNAME=test.txt
-If you're seeing this, then the `cat` command is working!
-
-!LOC=/
-!FNAME=sys/
-
-!LOC=/
-!FNAME=home/
-
-
-
-!LOC=/
-!FNAME=a.txt
-
-
-
-
