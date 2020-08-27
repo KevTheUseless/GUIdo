@@ -577,10 +577,6 @@ If you're seeing this, then the `cat` command is working!
 !FNAME=home/
 
 
-
 !LOC=/
-!FNAME=a.txt
-
-
-
-
+!FNAME=x
+abcd
