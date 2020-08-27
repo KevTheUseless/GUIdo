@@ -242,11 +242,13 @@ class TxtField:
 		self.placeholder = ['%s# ' % self.pwd]
 		self.txtBuffer = []
 		self.content = []
+		self.overlay = []
 		# MAGIC #
 		self.caps = { '`': '~', '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', '-': '_', '=': '+', '[': '{', ']': '}', '\\': '|', ';': ':', '\'': '"', ',': '<', '.': '>', '/': '?', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H', 'i': 'I', 'j': 'J', 'k': 'K', 'l': 'L', 'm': 'M', 'n': 'N', 'o': 'O', 'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W', 'x': 'X', 'y': 'Y', 'z': 'Z' }
 		self.shift, self.capsLock = False, False
 		self.currentLine, self.loc, self.maxIndex = 0, 0, 0
 		self.cLineStr = ""
+		self.blink = True
 		self.raster = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 16)
 	def wrap(self, txtBuffer):
 		lines = []
@@ -277,10 +279,22 @@ class TxtField:
 		lines.append(ph)
 		return lines
 	def draw(self, screen, lines, c = (255, 255, 255), y = 0):
+		tempY = y
 		for line in lines:
 			img = self.raster.render(line, True, c)
 			screen.blit(img, (self.x, y))
 			y += 16
+		if counter % 50 > 25:
+			self.blink = True
+		else:
+			self.blink = False
+		if self.blink:
+			y = tempY
+			temp = self.wrap(self.overlay)
+			for line in temp:
+				img = self.raster.render(line, True, c)
+				screen.blit(img, (self.x, y))
+				y += 16
 	def cd(self, dir_name):
 		def process_dir(dr: str):
 			for d in dr.split('/'):
@@ -329,8 +343,6 @@ class TxtField:
 			while True:
 				for event in pygame.event.get():
 					if event.type == pygame.KEYDOWN:
-						self.txtBuffer = []
-						self.content = []
 						self.keyDown(event.key, True)
 						files.write(self.cLineStr + '\n')
 						framework.launch()
@@ -373,6 +385,8 @@ class TxtField:
 						self.txtBuffer.pop(self.loc - 1)
 						self.maxIndex -= 1
 						self.loc -= 1
+						self.overlay = [' '] * (len(self.txtBuffer) + 1)
+						self.overlay[self.currentLine + self.loc] = '_'
 				except: pass
 		elif key == pygame.K_DELETE:
 			try:
@@ -380,24 +394,20 @@ class TxtField:
 					self.loc = self.maxIndex
 				self.txtBuffer.pop(self.currentLine + self.loc)
 				self.maxIndex -= 1
+				self.overlay = [' '] * (len(self.txtBuffer) + 1)
+				self.overlay[self.currentLine + self.loc] = '_'
 			except: pass
 		elif key == pygame.K_RETURN:
 			cmd = ''
 			self.loc = 0
 			self.maxIndex = 0
 			i = -1
-			if isVis:
-				while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\r':
-					cmd = self.txtBuffer[i] + cmd
-					i -= 1
-			else:
-				while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\n':
-					cmd = self.txtBuffer[i] + cmd
-					i -= 1
+			while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\n':
+				cmd = self.txtBuffer[i] + cmd
+				i -= 1
 			if isVis:
 				self.cLineStr = cmd
 				self.txtBuffer.append('\r')
-				return
 			else:
 				self.exec_cmd(cmd)
 				self.txtBuffer.append('\n')
@@ -406,6 +416,9 @@ class TxtField:
 			for i in range(4):
 				self.txtBuffer.append(' ')
 				self.loc += 1
+				self.maxIndex += 1
+			self.overlay = [' '] * (len(self.txtBuffer) + 1)
+			self.overlay[self.currentLine + self.loc] = '_'
 		elif key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
 			self.shift = True
 		elif key == pygame.K_CAPSLOCK:
@@ -426,6 +439,8 @@ class TxtField:
 					self.txtBuffer.insert(self.loc, chr(key))
 			self.loc += 1
 			self.maxIndex += 1
+			self.overlay = [' '] * (len(self.txtBuffer) + 1)
+			self.overlay[self.currentLine + self.loc] = '_'
 		framework.launch()
 		print(self.txtBuffer, self.loc, self.maxIndex)
 
@@ -545,7 +560,9 @@ term.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, f
 snake.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
 term.enableTxtField(50, 60, 100, 40)
 
+counter = 0
 while True:
+	counter += 1
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			pygame.quit()
