@@ -258,7 +258,6 @@ class TxtField:
 		if self.loc < 0: self.loc = 0
 		if self.maxIndex < 0: self.loc = 0
 		for i in range(len(txtBuffer)):
-			#print("%dth run, %s, ptr=%d" % (i, txtBuffer[i] if txtBuffer[i] != '\r' else '\\r', ptr))
 			if txtBuffer[i] == '\n':
 				self.currentLine = i + 1
 				lines.append(ph)
@@ -322,35 +321,36 @@ class TxtField:
 			return
 
 		flg = True
-		rm(self.pwd, [args])
-		files = open("files.img", 'a+', encoding="ISO-8859-1")
-		files.write("\n\n!LOC=" + self.pwd + "\n")
-		files.write("!FNAME=" + args + "\n")
-		self.txtBuffer.append('\r')
-		self.txtBuffer.append('\r')
 		while flg:
-			for event in pygame.event.get():
-				if event.type == pygame.KEYDOWN:
-					#self.txtBuffer = []
-					#self.content = []
-					print(chr(event.key), file=sys.stderr)
-					if event.key == pygame.K_ESCAPE:
-						flg = False
-						break
-					self.keyDown(event.key, True)
-					files.write(self.cLineStr)
+			rm(self.pwd, [args])
+			files = open("files.img", 'a+', encoding="ISO-8859-1")
+			files.write("\n\n!LOC=" + self.pwd + "\n")
+			files.write("!FNAME=" + args + "\n")
+			self.txtBuffer.append('\r')
+			self.txtBuffer.append('\r')
+			while flg:
+				for event in pygame.event.get():
+					if event.type == pygame.KEYDOWN:
+						#self.txtBuffer = []
+						#self.content = []
+						print(chr(event.key), file=sys.stderr)
+						if event.key == pygame.K_ESCAPE:
+							flg = False
+						self.keyDown(event.key, True)
+						files.write(self.cLineStr + '\n')
+						framework.launch()
+					elif event.type == pygame.KEYUP:
+						if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+							self.shift = False
+						elif event.key == pygame.K_CAPSLOCK:
+							self.capsLock = 1 - self.capsLock
+					elif event.type == pygame.QUIT:
+						pygame.quit()
+						sys.exit()
 					framework.launch()
-				elif event.type == pygame.KEYUP:
-					if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
-						self.shift = False
-					elif event.key == pygame.K_CAPSLOCK:
-						self.capsLock = 1 - self.capsLock
-				elif event.type == pygame.QUIT:
-					pygame.quit()
-					sys.exit()
-				framework.launch()
-		files.close()
+			files.close()
 
+		self.txtBuffer.append('\r')
 	def exec_cmd(self, on_scr):
 		cmd = on_scr.split()
 		try: main = cmd.pop(0)
@@ -366,7 +366,6 @@ class TxtField:
 			else: pass
 		self.txtBuffer.append('\r')
 		self.txtBuffer += list(output.getvalue().rstrip('\n'))
-		print(output.getvalue())
 		self.placeholder.append('%s# ' % self.pwd)
 	def keyUp(self, key):
 		if key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
@@ -403,7 +402,6 @@ class TxtField:
 					cmd = self.txtBuffer[i] + cmd
 					i -= 1
 			if isVis:
-				print(cmd, file=sys.stderr)
 				self.cLineStr = cmd
 				self.txtBuffer.append('\r')
 				return
@@ -435,8 +433,8 @@ class TxtField:
 					self.txtBuffer.insert(self.loc + self.currentLine, chr(key))
 			self.loc += 1
 			self.maxIndex += 1
-
 		framework.launch()
+		print(''.join(self.txtBuffer), self.currentLine)
 
 class Secret:
 	def __init__(self, rect, dialogID):
