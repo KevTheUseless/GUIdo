@@ -306,8 +306,11 @@ class TxtField:
 		if self.frame <= 30: self.cursor.image.fill(pygame.Color(252, 252, 252))
 		else: self.cursor.image.fill(pygame.Color(0, 0, 0))
 
-		self.cursor.rect.center = (self.x + (self.loc + len(self.pwd) + 1) * 10 + 5,
-								   self.y + (self.txtBuffer.count('\r') + self.txtBuffer.count('\n')) * 16 + 8)
+		lines = self.txtBuffer.count('\r') + self.txtBuffer.count('\n')
+		if lines > 39: lines = 39
+
+		self.cursor.rect.center = (self.x + (self.loc + len(self.pwd) + 1) * 9 + 8,
+								   self.y + lines * 16 + 8)
 		screen.blit(self.cursor.image, self.cursor.rect)
 	def cd(self, dir_name):
 		def process_dir(dr: str):
@@ -460,9 +463,6 @@ class TxtField:
 			self.maxIndex += 1
 
 		framework.launch()
-
-		print("curline %d loc %d" % (self.currentLine, self.loc))
-		print(self.txtBuffer)
 
 class Secret:
 	def __init__(self, rect, dialogID):
