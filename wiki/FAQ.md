@@ -11,4 +11,4 @@ Run `stub.py` either by double-clicking on it (in Windows) or using the command 
 When you open it up through the virtual terminal, you will be put in *input mode*, which means whatever you type will be written into the file. `vis` is a *line-based* editor, meaning you can only edit the line you're on.
 
 ### Where do the files go?
-Everything you created in Winnux 58 will go into the `files.img` *virtual disk*. You can view them using the `cat` command in the virtual terminal.
+Everything you created in Winnux 58 will go into the `files.img` *virtual disk*. You can view them using the `cat` command in the virtual terminal. Note that `files.img` is NOT a traditional disk image, so don't try to mount that!

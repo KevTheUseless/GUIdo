@@ -13,7 +13,7 @@ def pwd(working_dir, args):
 
 def ls(working_dir, args, flag=True):
 	files = open("files.img", 'r+', encoding="ISO-8859-1")
-	lines = files.read().strip('\0').split('\n')
+	lines = files.read().split('\n')
 
 	result = []
 	for i, line in enumerate(lines):
@@ -242,13 +242,11 @@ class TxtField:
 		self.placeholder = ['%s# ' % self.pwd]
 		self.txtBuffer = []
 		self.content = []
-		self.overlay = []
 		# MAGIC #
 		self.caps = { '`': '~', '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')', '-': '_', '=': '+', '[': '{', ']': '}', '\\': '|', ';': ':', '\'': '"', ',': '<', '.': '>', '/': '?', 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', 'e': 'E', 'f': 'F', 'g': 'G', 'h': 'H', 'i': 'I', 'j': 'J', 'k': 'K', 'l': 'L', 'm': 'M', 'n': 'N', 'o': 'O', 'p': 'P', 'q': 'Q', 'r': 'R', 's': 'S', 't': 'T', 'u': 'U', 'v': 'V', 'w': 'W', 'x': 'X', 'y': 'Y', 'z': 'Z' }
 		self.shift, self.capsLock = False, False
 		self.currentLine, self.loc, self.maxIndex = 0, 0, 0
 		self.cLineStr = ""
-		self.blink = True
 		self.raster = pygame.font.Font("res/Perfect_DOS_VGA_437.ttf", 16)
 	def wrap(self, txtBuffer):
 		lines = []
@@ -264,7 +262,8 @@ class TxtField:
 				self.currentLine = i + 1
 				lines.append(ph)
 				ptr += 1
-				ph = self.placeholder[ptr]
+				try: ph = self.placeholder[ptr]
+				except: ptr = len(self.placeholder) - 1
 				prev_i = i
 			elif txtBuffer[i] == '\r' or (i != 0 and (i - prev_i) % self.w == 0):
 				ph += txtBuffer[i] if txtBuffer[i] not in ('\n', '\r', ' ', '') else ''
@@ -279,22 +278,10 @@ class TxtField:
 		lines.append(ph)
 		return lines
 	def draw(self, screen, lines, c = (255, 255, 255), y = 0):
-		tempY = y
 		for line in lines:
 			img = self.raster.render(line, True, c)
 			screen.blit(img, (self.x, y))
 			y += 16
-		if counter % 50 > 25:
-			self.blink = True
-		else:
-			self.blink = False
-		if self.blink:
-			y = tempY
-			temp = self.wrap(self.overlay)
-			for line in temp:
-				img = self.raster.render(line, True, c)
-				screen.blit(img, (self.x, y))
-				y += 16
 	def cd(self, dir_name):
 		def process_dir(dr: str):
 			for d in dr.split('/'):
@@ -333,16 +320,19 @@ class TxtField:
 		if '/' in args:
 			print("No.", end='\r')
 			return
-		while True:
+		flg = True
+		while flg:
 			rm(self.pwd, [args])
 			files = open("files.img", 'a+', encoding="ISO-8859-1")
 			files.write("\n\n!LOC=" + self.pwd + "\n")
 			files.write("!FNAME=" + args + "\n")
 			self.txtBuffer.append('\r')
 			self.txtBuffer.append('\r')
-			while True:
+			while flg:
 				for event in pygame.event.get():
 					if event.type == pygame.KEYDOWN:
+						if event.key == pygame.K_ESCAPE:
+							flg = False
 						self.keyDown(event.key, True)
 						files.write(self.cLineStr + '\n')
 						framework.launch()
@@ -356,6 +346,7 @@ class TxtField:
 						sys.exit()
 					framework.launch()
 			files.close()
+		self.txtBuffer.append('\r')
 	def exec_cmd(self, on_scr):
 		cmd = on_scr.split()
 		try: main = cmd.pop(0)
@@ -382,11 +373,9 @@ class TxtField:
 			if (self.txtBuffer and self.txtBuffer[-1] != '\n') or not self.txtBuffer:
 				try:
 					if self.loc - 1 != -1:
-						self.txtBuffer.pop(self.loc - 1)
+						self.txtBuffer.pop(self.currentLine + self.loc - 1)
 						self.maxIndex -= 1
 						self.loc -= 1
-						self.overlay = [' '] * (len(self.txtBuffer) + 1)
-						self.overlay[self.currentLine + self.loc] = '_'
 				except: pass
 		elif key == pygame.K_DELETE:
 			try:
@@ -394,20 +383,24 @@ class TxtField:
 					self.loc = self.maxIndex
 				self.txtBuffer.pop(self.currentLine + self.loc)
 				self.maxIndex -= 1
-				self.overlay = [' '] * (len(self.txtBuffer) + 1)
-				self.overlay[self.currentLine + self.loc] = '_'
 			except: pass
 		elif key == pygame.K_RETURN:
 			cmd = ''
 			self.loc = 0
 			self.maxIndex = 0
 			i = -1
-			while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\n':
-				cmd = self.txtBuffer[i] + cmd
-				i -= 1
+			if isVis:
+				while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\r':
+					cmd = self.txtBuffer[i] + cmd
+					i -= 1
+			else:
+				while len(self.txtBuffer) > - i - 1 and self.txtBuffer[i] != '\n':
+					cmd = self.txtBuffer[i] + cmd
+					i -= 1
 			if isVis:
 				self.cLineStr = cmd
 				self.txtBuffer.append('\r')
+				return
 			else:
 				self.exec_cmd(cmd)
 				self.txtBuffer.append('\n')
@@ -416,9 +409,6 @@ class TxtField:
 			for i in range(4):
 				self.txtBuffer.append(' ')
 				self.loc += 1
-				self.maxIndex += 1
-			self.overlay = [' '] * (len(self.txtBuffer) + 1)
-			self.overlay[self.currentLine + self.loc] = '_'
 		elif key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
 			self.shift = True
 		elif key == pygame.K_CAPSLOCK:
@@ -432,17 +422,14 @@ class TxtField:
 		else:
 			if 32 <= key <= 126:
 				if (key == 39 or 44 <= key <= 57 or key == 59 or key == 61 or key == 96 or 91 <= key <= 93) and self.shift:
-					self.txtBuffer.insert(self.loc, self.caps[chr(key)])
+					self.txtBuffer.insert(self.loc + self.currentLine, self.caps[chr(key)])
 				elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
-					self.txtBuffer.insert(self.loc, self.caps[chr(key)])
+					self.txtBuffer.insert(self.loc + self.currentLine, self.caps[chr(key)])
 				else:
-					self.txtBuffer.insert(self.loc, chr(key))
+					self.txtBuffer.insert(self.loc + self.currentLine, chr(key))
 			self.loc += 1
 			self.maxIndex += 1
-			self.overlay = [' '] * (len(self.txtBuffer) + 1)
-			self.overlay[self.currentLine + self.loc] = '_'
 		framework.launch()
-		print(self.txtBuffer, self.loc, self.maxIndex)
 
 class Secret:
 	def __init__(self, rect, dialogID):
@@ -560,9 +547,7 @@ term.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, f
 snake.addButton(Button("res/button/txt_btn.bmp", width // 2 - 35, 20, bg.appID, font=framework.raster, content="CLOSE"))
 term.enableTxtField(50, 60, 100, 40)
 
-counter = 0
 while True:
-	counter += 1
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			pygame.quit()
