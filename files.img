@@ -12,10 +12,10 @@ from enum import Enum
 
 width, height = 1024, 768
 
-def pwd(working_dir, args):
+def pwd(working_dir, args = None):
 	print(working_dir, end='\r')
 
-def ls(working_dir, args, flag=True):
+def ls(working_dir, args = None, flag = True):
 	files = open("files.img", 'r+', encoding="ISO-8859-1")
 	lines = files.read().strip('\0').split('\n')
 
@@ -26,9 +26,9 @@ def ls(working_dir, args, flag=True):
 			result.append(lines[i + 1].strip('!FNAME='))
 	return result
 
-def cat(working_dir, args):
+def cat(working_dir, args = None):
 	if not args:
-		print("Missing argument.\rUsage: cat <filename(s)>", end='\r')
+		print("cat: missing argument.\rUsage: cat <filename(s)>", end='\r')
 		return
 	for target in args:
 		files = open("files.img", 'r+', encoding="ISO-8859-1")
@@ -42,11 +42,14 @@ def cat(working_dir, args):
 						contents.append(lines[i])
 					break
 		else:
-			print("cat: %s: no such file" % target, end = '\r')
-		print('\r'.join(contents))
+			print("cat: %s: no such file." % target, end = '\r')
+		print('\r'.join(contents), end='\r')
 		files.close()
 
-def rm(working_dir, args):
+def rm(working_dir, args = None):
+	if not args:
+		print("rm: missing argument.\rUsage: rm <filename(s)>", end='\r')
+		return
 	files = open("files.img", 'r+', encoding="ISO-8859-1")
 	to_be_written = []
 	target = args[0]
@@ -123,7 +126,6 @@ class Kernel:
 			self.dialogs[self.dialogID].mouseDown(pos, button)
 		except:
 			pass
-		print(event.pos)
 	def mouseUp(self, pos, button):
 		self.apps[self.appID].mouseUp(pos, button)
 	def mouseMotion(self, pos):
@@ -270,7 +272,6 @@ class TxtField:
 
 	def wrap(self, txtBuffer):
 		self.frame += 1
-		self.frame %= 60
 		lines = []
 		ptr = 0
 		prev_i = 0
@@ -304,7 +305,7 @@ class TxtField:
 			screen.blit(img, (self.x, y))
 			y += 16
 
-		if self.frame <= 30: self.cursor.image.fill(pygame.Color(252, 252, 252))
+		if self.frame % 50 <= 25: self.cursor.image.fill(pygame.Color(252, 252, 252))
 		else: self.cursor.image.fill(pygame.Color(0, 0, 0))
 
 		lines = self.txtBuffer.count('\r') + self.txtBuffer.count('\n')
@@ -313,7 +314,7 @@ class TxtField:
 		self.cursor.rect.center = (self.x + (self.loc + (len(self.pwd) if not self.isVis else -2) + 1) * 9 + 8,
 								   self.y + lines * 16 + 8)
 		screen.blit(self.cursor.image, self.cursor.rect)
-	def cd(self, dir_name):
+	def cd(self, dir_name = None):
 		def process_dir(dr: str):
 			for d in dr.split('/'):
 				if d:
@@ -343,7 +344,7 @@ class TxtField:
 			self.pwd = '/'
 			dir_name = dir_name[1:]
 		process_dir(dir_name)
-	def vis(self, args):
+	def vis(self, args = None):
 		self.isVis = True
 		if not args:
 			print("vis: missing argument.\rUsage: vis <filename>", end='\r')
@@ -364,11 +365,11 @@ class TxtField:
 			for event in pygame.event.get():
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_ESCAPE:
+						self.loc = 0
 						flg = False
 						break
 					self.keyDown(event.key, True)
 					files.write(self.cLineStr)
-					framework.launch()
 				elif event.type == pygame.KEYUP:
 					if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT):
 						self.shift = False
@@ -377,8 +378,7 @@ class TxtField:
 				elif event.type == pygame.QUIT:
 					pygame.quit()
 					sys.exit()
-				framework.launch()
-			self.frame += 1
+			framework.launch()
 		files.close()
 		self.isVis = False
 
@@ -389,15 +389,18 @@ class TxtField:
 		output = io.StringIO()
 		with redirect_stdout(output):
 			if main:
-				if main == 'cd': self.cd(cmd[0])
-				elif main == 'vis': self.vis(cmd[0])
+				if main == "cd":
+					try: self.cd(cmd[0])
+					except: print("cd: missing argument.\rUsage: cd <dirname>", end='\r')
+				elif main == "vis":
+					try: self.vis(cmd[0])
+					except: print("vis: missing argument.\rUsage: vis <filename>", end='\r')
 				else: 
 					try: exec("%s('%s', %s)" % (main, self.pwd, str(cmd)))
-					except: print("%s: command not found" % on_scr, end='')
+					except: print("%s: command not found" % on_scr, end='\r')
 			else: pass
 		self.txtBuffer.append('\r')
 		self.txtBuffer += list(output.getvalue().rstrip('\n'))
-		print(output.getvalue())
 		self.placeholder.append('%s# ' % self.pwd)
 	def keyUp(self, key):
 		if key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
@@ -440,7 +443,6 @@ class TxtField:
 			else:
 				self.exec_cmd(cmd)
 				self.txtBuffer.append('\n')
-			framework.launch()
 		elif key == pygame.K_TAB:
 			for _ in range(4):
 				self.txtBuffer.append(' ')
@@ -463,10 +465,8 @@ class TxtField:
 					self.txtBuffer.insert(self.loc + self.currentLine, self.caps[chr(key)])
 				else:
 					self.txtBuffer.insert(self.loc + self.currentLine, chr(key))
-			self.loc += 1
-			self.maxIndex += 1
-
-		framework.launch()
+				self.loc += 1
+				self.maxIndex += 1
 
 class Secret:
 	def __init__(self, rect, dialogID):
