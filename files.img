@@ -241,6 +241,7 @@ class Tooltip:
 
 class TxtField:
 	def __init__(self, x, y, w, h):
+		self.isVis = False
 		self.x, self.y = x, y
 		self.w, self.h = w, h
 		self.pwd = '/'
@@ -309,7 +310,7 @@ class TxtField:
 		lines = self.txtBuffer.count('\r') + self.txtBuffer.count('\n')
 		if lines > 39: lines = 39
 
-		self.cursor.rect.center = (self.x + (self.loc + len(self.pwd) + 1) * 9 + 8,
+		self.cursor.rect.center = (self.x + (self.loc + (len(self.pwd) if not self.isVis else -2) + 1) * 9 + 8,
 								   self.y + lines * 16 + 8)
 		screen.blit(self.cursor.image, self.cursor.rect)
 	def cd(self, dir_name):
@@ -343,6 +344,7 @@ class TxtField:
 			dir_name = dir_name[1:]
 		process_dir(dir_name)
 	def vis(self, args):
+		self.isVis = True
 		if not args:
 			print("vis: missing argument.\rUsage: vis <filename>", end='\r')
 		if type(args) == type([]):
@@ -368,7 +370,7 @@ class TxtField:
 					files.write(self.cLineStr)
 					framework.launch()
 				elif event.type == pygame.KEYUP:
-					if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+					if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT):
 						self.shift = False
 					elif event.key == pygame.K_CAPSLOCK:
 						self.capsLock = 1 - self.capsLock
@@ -376,7 +378,9 @@ class TxtField:
 					pygame.quit()
 					sys.exit()
 				framework.launch()
+			self.frame += 1
 		files.close()
+		self.isVis = False
 
 	def exec_cmd(self, on_scr):
 		cmd = on_scr.split()
@@ -438,7 +442,7 @@ class TxtField:
 				self.txtBuffer.append('\n')
 			framework.launch()
 		elif key == pygame.K_TAB:
-			for i in range(4):
+			for _ in range(4):
 				self.txtBuffer.append(' ')
 				self.loc += 1
 		elif key == pygame.K_LSHIFT or key == pygame.K_RSHIFT:
@@ -455,7 +459,7 @@ class TxtField:
 			if 32 <= key <= 126:
 				if (key == 39 or 44 <= key <= 57 or key == 59 or key == 61 or key == 96 or 91 <= key <= 93) and self.shift:
 					self.txtBuffer.insert(self.loc + self.currentLine, self.caps[chr(key)])
-				elif 97 <= event.key <= 122 and (self.shift or self.capsLock):
+				elif 97 <= key <= 122 and (self.shift or self.capsLock):
 					self.txtBuffer.insert(self.loc + self.currentLine, self.caps[chr(key)])
 				else:
 					self.txtBuffer.insert(self.loc + self.currentLine, chr(key))
