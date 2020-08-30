@@ -43,6 +43,7 @@ else:
 				kernel.append(dsk_spl[j])
 			break
 
-	exec('\n'.join(kernel))
+	try: exec('\n'.join(kernel))
+	except: pass
 
 img.close()

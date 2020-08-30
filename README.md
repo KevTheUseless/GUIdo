@@ -2,26 +2,23 @@
 
 ## Overview
 
-Pygame GUI library, named after the creator of Python, Guido van Rossum, believing that this library will be the first to implement a GUI completely compatible with pygame. Included is a "mini-OS" to show off all the elements. That "mini-OS" is called *Winnux 58* (**Win**dows 9**5** + **Win**dows 9**8** + Li**nux**).
-
-~~i kinda hate this name now~~
+Pygame GUI library, named after the creator of Python, Guido van Rossum, believing that this library will be the first to implement a GUI library completely compatible with pygame. Included is a "mini-OS" to show off all the elements. It's called *Winnux 58* (**Win**dows 9**5** + **Win**dows 9**8** + Li**nux**).
 
 ## Features
 
--   A working command line, with these *nix-style commands*:
+-   A working command line, with these \*nix-style commands:
     -   `pwd`: print working directory
-    -   `ls`: list file and directories
+    -   `cat`: show contents of file(s)
+    -   `ls`: list files and directories
     -   `rm`: remove file(s)
     -   `cd`: change directory
 -   A command-line text editor, `vis`
 -   SNAKE! (with an incredibly high framerate soo good luck with that)
 -   A virtual disk to put programs in
 
-Please check our [wiki](https://github.com/The-UltimateGamer/GUIdo/wiki) for more details.
+Please check our [wiki](https://github.com/The-UltimateGamer/GUIdo/wiki) for more details. There is also an offline version in the `wiki` folder of this repository.
 
-## NEVER TRY TO MOUNT `files.img`
-
-## Directory structure:
+## Directory Structure
 - `/home/`
 
     - test.txt
@@ -32,11 +29,10 @@ Please check our [wiki](https://github.com/The-UltimateGamer/GUIdo/wiki) for mor
     - kernel.py
     (This is where our OS boots. **DO NOT TRY TO DELETE IT.**)
 
-## License Notice
+## License Agreement
 
 Winnux 58 is brought to you under the [GNU AGPL-3.0 License](https://www.gnu.org/licenses/agpl-3.0.en.html).
 
-OS emulator using pygame.
 Copyright (C) 2020 The-UltimateGamer & pythonleo
 
 This program is free software: you can redistribute it and/or modify
