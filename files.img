@@ -610,3 +610,7 @@ If you're seeing this, then the `cat` command is working!
 
 !LOC=/
 !FNAME=home/
+
+!LOC=/
+!FNAME=a
+hello
