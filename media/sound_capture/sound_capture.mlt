@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mlt LC_NUMERIC="C" version="6.21.0" title="Shotcut version 20.04.12" producer="main_bin">
+  <profile description="PAL 4:3 DV or DVD" width="1920" height="1080" progressive="1" sample_aspect_num="1" sample_aspect_den="1" display_aspect_num="16" display_aspect_den="9" frame_rate_num="60" frame_rate_den="1" colorspace="709"/>
+  <playlist id="main_bin">
+    <property name="xml_retain">1</property>
+  </playlist>
+  <producer id="black" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">0</property>
+    <property name="aspect_ratio">1</property>
+    <property name="mlt_service">color</property>
+    <property name="mlt_image_format">rgb24a</property>
+    <property name="set.test_audio">0</property>
+  </producer>
+  <playlist id="background">
+    <entry producer="black" in="00:00:00.000" out="00:00:12.433"/>
+  </playlist>
+  <producer id="producer0" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">-1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <playlist id="playlist0">
+    <property name="shotcut:video">1</property>
+    <property name="shotcut:name">V1</property>
+    <entry producer="producer0" in="00:00:00.000" out="00:00:12.433"/>
+  </playlist>
+  <producer id="producer1" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <producer id="producer2" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <producer id="producer3" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <producer id="producer4" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <producer id="producer5" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <producer id="producer6" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <producer id="producer7" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <producer id="producer8" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <producer id="producer9" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <producer id="producer10" in="00:00:00.000" out="00:00:12.433">
+    <property name="length">00:00:12.450</property>
+    <property name="eof">pause</property>
+    <property name="resource">C:/Users/shizh/Videos/2020-10-03 19-16-35.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2020-10-03T11:16:47</property>
+    <property name="shotcut:hash">09b21e4a9e18124513644a44cc2c6d9c</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2020-10-03 19-16-35.mkv</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <playlist id="playlist1">
+    <property name="shotcut:audio">1</property>
+    <property name="shotcut:name">A1</property>
+    <entry producer="producer1" in="00:00:00.000" out="00:00:02.183"/>
+    <entry producer="producer2" in="00:00:02.200" out="00:00:03.183"/>
+    <entry producer="producer3" in="00:00:03.200" out="00:00:04.183"/>
+    <entry producer="producer4" in="00:00:04.200" out="00:00:05.183"/>
+    <entry producer="producer5" in="00:00:05.200" out="00:00:06.183"/>
+    <entry producer="producer6" in="00:00:06.200" out="00:00:07.183"/>
+    <entry producer="producer7" in="00:00:07.200" out="00:00:08.167"/>
+    <entry producer="producer8" in="00:00:08.183" out="00:00:09.183"/>
+    <entry producer="producer9" in="00:00:09.200" out="00:00:10.233"/>
+    <entry producer="producer10" in="00:00:10.250" out="00:00:12.433"/>
+  </playlist>
+  <tractor id="tractor0" title="Shotcut version 20.04.12" global_feed="1" in="00:00:00.000" out="00:00:12.433">
+    <property name="shotcut">1</property>
+    <property name="shotcut:projectAudioChannels">2</property>
+    <property name="shotcut:projectFolder">1</property>
+    <track producer="background"/>
+    <track producer="playlist0"/>
+    <track producer="playlist1" hide="video"/>
+    <transition id="transition0">
+      <property name="a_track">0</property>
+      <property name="b_track">1</property>
+      <property name="mlt_service">mix</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+    <transition id="transition1">
+      <property name="a_track">0</property>
+      <property name="b_track">1</property>
+      <property name="version">0.9</property>
+      <property name="mlt_service">frei0r.cairoblend</property>
+      <property name="disable">1</property>
+    </transition>
+    <transition id="transition2">
+      <property name="a_track">0</property>
+      <property name="b_track">2</property>
+      <property name="mlt_service">mix</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+  </tractor>
+</mlt>
