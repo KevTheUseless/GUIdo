@@ -1,4 +1,4 @@
-1000
+500
 G 0 eighth
 C 1 quarter
 G 0 0.75
@@ -9,4 +9,17 @@ E 0 eighth
 A 0 quarter
 G 0 0.75
 F 0 sixteenth
+G 0 quarter
+C 0 0.75
+C 0 sixteenth
+D 0 quarter
+D 0 0.75
+E 0 sixteenth
+F 0 quarter
+F 0 0.75
+G 0 sixteenth
+A 0 quarter
+B 0 0.75
+C 1 sixteenth
+D 1 quarter
 G 0 quarter
