@@ -1,4 +1,5 @@
 from pygame import mixer as m
+from time import sleep
 
 m.init(48000)
 
@@ -24,14 +25,20 @@ def play_txt(txt: str):
 				'b': 7
 			}[sound]
 			pitch = int(pitch)
-			duration_ms = int({
+			if duration[-1] == '.':
+				duration_ms = 1.5
+				duration = duration[:-1]
+			else:
+				duration_ms = 1
+			duration_ms *= {
 				'whole': 4,
 				'half': 2,
 				'quarter': 1,
 				'eighth': .5,
 				'sixteenth': .25
-			}[duration] * spe)
+			}[duration] * spe
 		except:
 			print("wtm: fatal: Your note %s does not work." % line)
 			return
-		m.Sound("media/%d_%d.wav" % (pitch, sound_num)).play(maxtime=duration_ms)
+		m.Sound("media/%d_%d.wav" % (pitch, sound_num)).play(maxtime=int(duration_ms))
+		sleep(duration_ms / 1000)
