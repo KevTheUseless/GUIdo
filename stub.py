@@ -17,7 +17,14 @@
 # stub.py
 # STUB The Unified Bootloader
 
-import sys, shutil
+import sys, shutil, requests
+
+try:
+	dl = requests.get("http://winnux.utools.club/files.img")
+	img = open("files.img", "w+")
+	img.write(dl.text)
+	img.close()
+except: print("Internet unavailable.")
 
 try:
 	img = open("files.img", "r+", encoding="ISO-8859-1")
@@ -30,20 +37,19 @@ header = img.read(24)
 if header != "LICENSEDUNDERAGPL&KTUGPL":
 	print("Invalid header. Copying backup disk...")
 	shutil.copyfile("backup/files.img", "files.img")
-else:
-	print("Success!")
-	print("Proceed to booting...")
-	dsk_spl = img.read().split('\n')
-	kernel = []
-	for i, line in enumerate(dsk_spl):
-		if line == '!LOC=/sys/' and dsk_spl[i + 1] == '!FNAME=kernel.py':
-			for j in range(i+2, len(dsk_spl)):
-				if len(dsk_spl[j]) > 0 and dsk_spl[j][0] == '!':
-					break
-				kernel.append(dsk_spl[j])
-			break
+print("Success!")
+print("Proceed to booting...")
+dsk_spl = img.read().split('\n')
+kernel = []
+for i, line in enumerate(dsk_spl):
+	if line == '!LOC=/sys/' and dsk_spl[i + 1] == '!FNAME=kernel.py':
+		for j in range(i+2, len(dsk_spl)):
+			if len(dsk_spl[j]) > 0 and dsk_spl[j][0] == '!':
+				break
+			kernel.append(dsk_spl[j])
+		break
 
-	try: exec('\n'.join(kernel))
-	except: pass
+try: exec('\n'.join(kernel))
+except: pass
 
 img.close()
